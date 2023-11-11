@@ -1,16 +1,14 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
 import logger from 'redux-logger';
 
-import authReducer from './slices/authSession/auth.slice';
-
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
-
-const rootReducer = combineReducers({
-  auth: authReducer,
-});
+import { authMiddleware } from './slices/auth/auth.middleware';
+import { rootReducer } from './root.reducer';
 
 export const store = configureStore({
   reducer: rootReducer,
-  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(logger),
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware().concat(logger).concat(authMiddleware),
 });
+
+export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof rootReducer>;

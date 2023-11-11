@@ -10,12 +10,12 @@ import {
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { SIGN_UP_SCREEN } from '../navigation/navigation.constants';
-import { clearError, signIn } from '../store/slices/authSession/auth.slice';
+import { clearError, signIn } from '../store/slices/auth/auth.slice';
 import {
   authErrorSelector,
   isAuthLoadingStatusSelector,
 } from '../store/selectors/auth.selectors';
-import {AppDispatch} from "../store/store";
+import { useAppDispatch, useAppSelector } from '../hooks';
 
 // type SignInScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'SignIn'>;
 
@@ -24,9 +24,9 @@ type Props = {
 };
 
 const SignInScreen: React.FC<Props> = ({ navigation }) => {
-  const dispatch: AppDispatch = useDispatch();
-  const isLoading = useSelector(isAuthLoadingStatusSelector, shallowEqual);
-  const error = useSelector(authErrorSelector, shallowEqual);
+  const dispatch = useAppDispatch();
+  const isLoading = useAppSelector(isAuthLoadingStatusSelector, shallowEqual);
+  const error = useAppSelector(authErrorSelector, shallowEqual);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
@@ -34,7 +34,6 @@ const SignInScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/*{loading && <ActivityIndicator size="large" />}*/}
       <TextInput
         label="Email"
         value={email}
@@ -105,7 +104,7 @@ const styles = StyleSheet.create({
   },
   signUpButtonText: {
     fontSize: 16,
-    color: '#673AB7',
+    color: '#673AB7', // TODO take from theme
     fontWeight: 'bold',
   },
 });

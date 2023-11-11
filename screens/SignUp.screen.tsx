@@ -1,36 +1,35 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Text, TouchableRipple } from 'react-native-paper';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { StyleSheet, View } from 'react-native';
+import {
+  Button,
+  Snackbar,
+  Text,
+  TextInput,
+  TouchableRipple,
+} from 'react-native-paper';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+
 import { SIGN_IN_SCREEN } from '../navigation/navigation.constants';
+import { clearError, signUp } from '../store/slices/auth/auth.slice';
+import { AppDispatch } from '../store/store';
+import {
+  authErrorSelector,
+  isAuthLoadingStatusSelector,
+} from '../store/selectors/auth.selectors';
 
 type Props = {
   navigation: any;
 };
 
 const SignUpScreen: React.FC<Props> = ({ navigation }) => {
+  const dispatch: AppDispatch = useDispatch();
+  const isLoading = useSelector(isAuthLoadingStatusSelector, shallowEqual);
+  const error = useSelector(authErrorSelector, shallowEqual);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
 
-  const handleSignUp = async () => {
-    setLoading(true);
-
-    // Perform validation, for example, check if passwords match
-    if (password !== confirmPassword) {
-      setLoading(false);
-      setError('Passwords do not match.');
-      return;
-    }
-
-    // Here you would normally call an API to handle sign up
-    // For example purposes, I'll just set a timeout to simulate an async request
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-  };
+  const submitSignUp = () => dispatch(signUp({ email, password }));
 
   return (
     <View style={styles.container}>
@@ -61,21 +60,29 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
       />
       <Button
         mode="contained"
-        onPress={handleSignUp}
+        onPress={submitSignUp}
         style={styles.button}
-        loading={loading}
-        disabled={loading}>
+        loading={isLoading}
+        disabled={isLoading}>
         Sign Up
       </Button>
-      {/* If you want a link back to the sign-in screen */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>Already have an account? </Text>
         <TouchableRipple onPress={() => navigation.navigate(SIGN_IN_SCREEN)}>
-          <Text style={styles.signUpButtonText}>Sign In</Text>
+          <Text style={styles.signInButtonText}>Sign In</Text>
         </TouchableRipple>
       </View>
-      {/* Snackbar to show errors like password mismatch */}
-      {/* ... */}
+      <Snackbar
+        visible={!!error}
+        onDismiss={() => dispatch(clearError())}
+        action={{
+          label: 'Close',
+          onPress: () => {
+            dispatch(clearError());
+          },
+        }}>
+        {error}
+      </Snackbar>
     </View>
   );
 };
@@ -104,9 +111,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
-  signUpButtonText: {
+  signInButtonText: {
     fontSize: 16,
-    color: '#673AB7',
+    color: '#673AB7', // TODO take from theme
     fontWeight: 'bold',
   },
   // ...any other styles you may need
