@@ -14,11 +14,3 @@ Run:
 ```bash
 $ npm start
 ```
-
-## Debugging
-
-Install [React Native Debugger](https://github.com/jhen0409/react-native-debugger) and run:
-
-```bash
-$ open "rndebugger://set-debugger-loc?host=localhost&port=8081"
-```
