@@ -3,12 +3,12 @@ import {
   CognitoUser,
   AuthenticationDetails,
   CognitoUserSession,
+  ICognitoUserSessionData,
 } from 'amazon-cognito-identity-js';
 
 import { userPool } from './userPool';
 import { RootState } from '../../store';
 import { CognitoError } from '../../../models/error.model';
-import { RejectedAction } from '@reduxjs/toolkit/dist/query/core/buildThunks';
 
 // Then, use this type in your AsyncThunkConfig
 interface SignAsyncThunkConfig {
@@ -17,7 +17,7 @@ interface SignAsyncThunkConfig {
 }
 
 export const signIn = createAsyncThunk<
-  CognitoUserSession,
+  ICognitoUserSessionData,
   IUserSignIn,
   SignAsyncThunkConfig
 >('auth/signIn', async ({ email, password }, thunkAPI) => {
@@ -31,22 +31,19 @@ export const signIn = createAsyncThunk<
     Pool: userPool,
   });
 
-  try {
-    return await new Promise<CognitoUserSession>((resolve, reject) => {
-      cognitoUser.authenticateUser(authenticationDetails, {
-        onSuccess: resolve,
-        onFailure: err => {
-          reject(err);
-        },
-      });
+  return await new Promise<ICognitoUserSessionData>((resolve, reject) => {
+    cognitoUser.authenticateUser(authenticationDetails, {
+      onSuccess: cognitoUserSession =>
+        resolve(JSON.parse(JSON.stringify(cognitoUserSession)) as ICognitoUserSessionData),
+      onFailure: err => {
+        reject(err);
+      },
     });
-  } catch (err) {
-    return thunkAPI.rejectWithValue(err as CognitoError);
-  }
+  });
 });
 
 interface IAuthState extends ILoadingState {
-  session: CognitoUserSession | null;
+  session: ICognitoUserSessionData | null;
   error: CognitoError | null;
   loading: LoadingStatus;
 }
@@ -74,7 +71,7 @@ export const authSlice = createSlice({
       })
       .addCase(
         signIn.fulfilled,
-        (state, action: PayloadAction<CognitoUserSession>) => {
+        (state, action: PayloadAction<ICognitoUserSessionData>) => {
           state.session = action.payload;
           state.loading = 'succeeded';
           state.error = null;
@@ -83,7 +80,7 @@ export const authSlice = createSlice({
       .addCase(signIn.rejected, (state, action) => {
         state.session = null;
         state.loading = 'failed';
-        state.error = action.payload as CognitoError;
+        state.error = action.error as CognitoError;
       });
   },
 });
