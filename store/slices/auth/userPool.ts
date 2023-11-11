@@ -1,5 +1,5 @@
 import 'react-native-get-random-values';
-import { CognitoUserPool } from 'amazon-cognito-identity-js';
+import { CognitoUserPool, ICognitoUserData } from 'amazon-cognito-identity-js';
 
 const poolData = {
   UserPoolId: process.env.EXPO_PUBLIC_USERPOOL_ID as string,
@@ -7,3 +7,8 @@ const poolData = {
 };
 
 export const userPool = new CognitoUserPool(poolData);
+
+export const getUserDataByUsername = (username: string): ICognitoUserData => ({
+  Username: username,
+  Pool: userPool,
+});

@@ -3,13 +3,17 @@ import {
   AuthenticationDetails,
   CognitoUser,
   CognitoUserAttribute,
+  CognitoUserSession,
   ICognitoUserSessionData,
   ISignUpResult,
+  UserData,
 } from 'amazon-cognito-identity-js';
 
-import { userPool } from './userPool';
+import { getUserDataByUsername, userPool } from './userPool';
 import { CognitoError } from '../../../models/error.model';
-import { RootState } from '../../store';
+import { AppDispatch, RootState } from '../../store';
+import { setUser } from '../user/user.slice';
+import { userNameSelector } from '../../selectors/user.selectors';
 
 // Then, use this type in your AsyncThunkConfig
 interface SignAsyncThunkConfig {
@@ -27,24 +31,37 @@ export const signIn = createAsyncThunk<
     Password: password,
   });
 
-  const cognitoUser = new CognitoUser({
-    Username: email,
-    Pool: userPool,
-  });
+  const cognitoUser = new CognitoUser(getUserDataByUsername(email));
 
-  return await new Promise<ICognitoUserSessionData>((resolve, reject) => {
-    cognitoUser.authenticateUser(authenticationDetails, {
-      onSuccess: cognitoUserSession =>
-        resolve(
-          JSON.parse(
-            JSON.stringify(cognitoUserSession),
-          ) as ICognitoUserSessionData,
-        ),
-      onFailure: err => {
+  const cognitoUserSession = await new Promise<CognitoUserSession>(
+    (resolve, reject) => {
+      cognitoUser.authenticateUser(authenticationDetails, {
+        onSuccess: userSession => resolve(userSession),
+        onFailure: err => {
+          reject(err);
+        },
+      });
+    },
+  );
+
+  /*
+   * User assignment placed here instead of separate middleware cause CognitoUserSession is not PLain Object
+   * Thus, it's hard to recreate it from serialized session
+   */
+  const userData = await new Promise((resolve, reject) => {
+    cognitoUser.getUserData((err, userData) => {
+      if (err) {
         reject(err);
-      },
+      }
+      resolve(userData);
     });
   });
+
+  thunkAPI.dispatch(setUser(userData as UserData));
+
+  return JSON.parse(
+    JSON.stringify(cognitoUserSession),
+  ) as ICognitoUserSessionData;
 });
 
 export const signUp = createAsyncThunk<
@@ -65,6 +82,33 @@ export const signUp = createAsyncThunk<
       if (err) reject(err);
       resolve(JSON.parse(JSON.stringify(result)) as ISignUpResult);
     });
+  });
+});
+
+type SignOutReturnType = void | string;
+export const signOut = createAsyncThunk<
+  SignOutReturnType,
+  void,
+  { dispatch: AppDispatch; state: RootState }
+>('auth/signOut', async (_, thunkAPI) => {
+  return new Promise<SignOutReturnType>((resolve, reject) => {
+    const userName = userNameSelector(thunkAPI.getState()) as string;
+    const cognitoUser = new CognitoUser(getUserDataByUsername(userName));
+
+    if (cognitoUser instanceof CognitoUser) {
+      cognitoUser.signOut();
+
+      // You can resolve with a success message or simply resolve
+      resolve('Successfully signed out');
+    } else {
+      // Reject in case there's no user session
+      reject('No active user session found');
+    }
+  }).catch(error => {
+    // Handle or log the error as needed
+    // Optionally, use thunkAPI to dispatch any error handling actions
+    console.error('Sign out error:', error);
+    return thunkAPI.rejectWithValue(error);
   });
 });
 
@@ -122,6 +166,11 @@ export const authSlice = createSlice({
         state.session = null;
         state.loading = 'failed';
         state.error = action.error as CognitoError;
+      })
+      .addCase(signOut.fulfilled, state => {
+        state.session = null;
+        state.loading = 'idle';
+        state.error = null;
       });
   },
 });
