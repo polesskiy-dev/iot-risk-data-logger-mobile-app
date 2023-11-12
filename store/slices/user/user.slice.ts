@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { UserData } from 'amazon-cognito-identity-js';
 
 import { CognitoError } from '../../../models/error.model';
+import { ILoadingState, LoadingStatus } from '../../../models/loading.model';
 
 interface IUserState extends ILoadingState {
   user: UserData | null;
@@ -12,7 +13,7 @@ interface IUserState extends ILoadingState {
 const initialState: IUserState = {
   user: null,
   error: null,
-  loading: 'idle',
+  loading: LoadingStatus.IDLE,
 };
 
 export const userSlice = createSlice({

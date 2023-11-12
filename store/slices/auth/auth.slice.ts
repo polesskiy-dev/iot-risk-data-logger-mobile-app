@@ -14,6 +14,7 @@ import { CognitoError } from '../../../models/error.model';
 import { AppDispatch, RootState } from '../../store';
 import { setUser } from '../user/user.slice';
 import { userNameSelector } from '../../selectors/user.selectors';
+import { ILoadingState, LoadingStatus } from '../../../models/loading.model';
 
 // Then, use this type in your AsyncThunkConfig
 interface SignAsyncThunkConfig {
@@ -121,7 +122,7 @@ interface IAuthState extends ILoadingState {
 const initialState: IAuthState = {
   session: null,
   error: null,
-  loading: 'idle',
+  loading: LoadingStatus.IDLE,
 };
 
 export const authSlice = createSlice({
@@ -136,40 +137,40 @@ export const authSlice = createSlice({
     builder
       .addCase(signIn.pending, state => {
         state.session = null;
-        state.loading = 'loading';
+        state.loading = LoadingStatus.LOADING;
         state.error = null;
       })
       .addCase(signUp.pending, state => {
         state.session = null;
-        state.loading = 'loading';
+        state.loading = LoadingStatus.LOADING;
         state.error = null;
       })
       .addCase(
         signIn.fulfilled,
         (state, action: PayloadAction<ICognitoUserSessionData>) => {
           state.session = action.payload;
-          state.loading = 'succeeded';
+          state.loading = LoadingStatus.SUCCEEDED;
           state.error = null;
         },
       )
       .addCase(signUp.fulfilled, state => {
         state.session = null;
-        state.loading = 'succeeded';
+        state.loading = LoadingStatus.SUCCEEDED;
         state.error = null;
       })
       .addCase(signIn.rejected, (state, action) => {
         state.session = null;
-        state.loading = 'failed';
+        state.loading = LoadingStatus.FAILED;
         state.error = action.error as CognitoError;
       })
       .addCase(signUp.rejected, (state, action) => {
         state.session = null;
-        state.loading = 'failed';
+        state.loading = LoadingStatus.FAILED;
         state.error = action.error as CognitoError;
       })
       .addCase(signOut.fulfilled, state => {
         state.session = null;
-        state.loading = 'idle';
+        state.loading = LoadingStatus.SUCCEEDED;
         state.error = null;
       });
   },

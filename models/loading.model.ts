@@ -1,5 +1,10 @@
-type LoadingStatus = 'idle' | 'loading' | 'succeeded' | 'failed';
+export enum LoadingStatus {
+  IDLE = 'idle',
+  LOADING = 'loading',
+  SUCCEEDED = 'succeeded',
+  FAILED = 'failed',
+}
 
-interface ILoadingState {
+export interface ILoadingState {
   loading: LoadingStatus;
 }
