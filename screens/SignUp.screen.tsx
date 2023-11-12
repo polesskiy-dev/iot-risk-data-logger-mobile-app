@@ -29,10 +29,11 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   const isLoading = useSelector(isAuthLoadingStatusSelector, shallowEqual);
   const error = useSelector(authErrorSelector, shallowEqual);
   const [email, setEmail] = useState<string>('');
+  const [fullName, setFullName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
 
-  const submitSignUp = () => dispatch(signUp({ email, password }));
+  const submitSignUp = () => dispatch(signUp({ email, fullName, password }));
 
   return (
     <View style={styles.container}>
@@ -40,6 +41,15 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         label="Email"
         value={email}
         onChangeText={setEmail}
+        mode="outlined"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        style={styles.input}
+      />
+      <TextInput
+        label="Full Name"
+        value={fullName}
+        onChangeText={setFullName}
         mode="outlined"
         autoCapitalize="none"
         keyboardType="email-address"

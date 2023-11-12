@@ -68,13 +68,13 @@ export const signUp = createAsyncThunk<
   ISignUpResult,
   IUserSignUp,
   SignAsyncThunkConfig
->('auth/signUp', async ({ email, password }, thunkAPI) => {
+>('auth/signUp', async ({ email, password, fullName }, thunkAPI) => {
   const attributeList: CognitoUserAttribute[] = [
-    // TODO add additional e.g.
-    // new CognitoUserAttribute({
-    //   Name: 'email',
-    //   Value: email,
-    // }),
+    // TODO add additional attributes
+    new CognitoUserAttribute({
+      Name: 'custom:FullName', // TODO don't forget to include in to Cognito schema
+      Value: fullName,
+    }),
   ];
 
   return await new Promise<ISignUpResult>((resolve, reject) => {

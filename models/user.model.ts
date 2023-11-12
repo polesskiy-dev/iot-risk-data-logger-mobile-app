@@ -3,4 +3,6 @@ interface IUserSignIn {
   password: string;
 }
 
-interface IUserSignUp extends IUserSignIn {}
+interface IUserSignUp extends IUserSignIn {
+  fullName: string;
+}
