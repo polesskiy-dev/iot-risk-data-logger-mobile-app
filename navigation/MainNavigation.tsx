@@ -1,13 +1,13 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-import DrawerNavigator from '../navigation/DrawerNavigator';
-import AuthNavigator from '../navigation/AuthNavigator';
+import DrawerNavigator from './DrawerNavigator';
+import AuthNavigator from './AuthNavigator';
 import { isAuthenticatedSelector } from '../store/selectors/auth.selectors';
 
-const Main = () => {
+const MainNavigation = () => {
   const isAuthenticated = useSelector(isAuthenticatedSelector);
   return isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />;
 };
 
-export default Main;
+export default MainNavigation;

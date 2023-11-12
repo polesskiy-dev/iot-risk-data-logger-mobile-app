@@ -7,7 +7,7 @@ import {
   TextInput,
   TouchableRipple,
 } from 'react-native-paper';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { shallowEqual } from 'react-redux';
 
 import { SIGN_UP_SCREEN } from '../navigation/navigation.constants';
 import { clearError, signIn } from '../store/slices/auth/auth.slice';
@@ -16,8 +16,7 @@ import {
   isAuthLoadingStatusSelector,
 } from '../store/selectors/auth.selectors';
 import { useAppDispatch, useAppSelector } from '../hooks';
-
-// type SignInScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'SignIn'>;
+import { AppTheme, useAppTheme } from '../AppTheme';
 
 type Props = {
   navigation: any; // SignInScreenNavigationProp
@@ -25,6 +24,8 @@ type Props = {
 
 const SignInScreen: React.FC<Props> = ({ navigation }) => {
   const dispatch = useAppDispatch();
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
   const isLoading = useAppSelector(isAuthLoadingStatusSelector, shallowEqual);
   const error = useAppSelector(authErrorSelector, shallowEqual);
   const [email, setEmail] = useState<string>('');
@@ -80,33 +81,34 @@ const SignInScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-  },
-  input: {
-    marginBottom: 10,
-  },
-  button: {
-    marginTop: 10,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  footerText: {
-    fontSize: 16,
-    color: '#000', // or any color that suits your design
-  },
-  signUpButtonText: {
-    fontSize: 16,
-    color: '#673AB7', // TODO take from theme
-    fontWeight: 'bold',
-  },
-});
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      justifyContent: 'center',
+    },
+    input: {
+      marginBottom: 10,
+    },
+    button: {
+      marginTop: 10,
+    },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 20,
+    },
+    footerText: {
+      fontSize: 16,
+      color: '#000', // or any color that suits your design
+    },
+    signUpButtonText: {
+      fontSize: 16,
+      color: theme.colors.primary,
+      fontWeight: 'bold',
+    },
+  });
 
 export default SignInScreen;

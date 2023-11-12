@@ -16,12 +16,15 @@ import {
   authErrorSelector,
   isAuthLoadingStatusSelector,
 } from '../store/selectors/auth.selectors';
+import { AppTheme, useAppTheme } from '../AppTheme';
 
 type Props = {
   navigation: any;
 };
 
 const SignUpScreen: React.FC<Props> = ({ navigation }) => {
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
   const dispatch: AppDispatch = useDispatch();
   const isLoading = useSelector(isAuthLoadingStatusSelector, shallowEqual);
   const error = useSelector(authErrorSelector, shallowEqual);
@@ -87,36 +90,35 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  // Same styles as SignInScreen for consistency
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-  },
-  input: {
-    marginBottom: 10,
-  },
-  button: {
-    marginTop: 10,
-  },
-  // Add the footer styles from the previous SignInScreen example
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  footerText: {
-    fontSize: 16,
-    color: '#000',
-  },
-  signInButtonText: {
-    fontSize: 16,
-    color: '#673AB7', // TODO take from theme
-    fontWeight: 'bold',
-  },
-  // ...any other styles you may need
-});
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    // Same styles as SignInScreen for consistency
+    container: {
+      flex: 1,
+      padding: 20,
+      justifyContent: 'center',
+    },
+    input: {
+      marginBottom: 10,
+    },
+    button: {
+      marginTop: 10,
+    },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 20,
+    },
+    footerText: {
+      fontSize: 16,
+      color: '#000',
+    },
+    signInButtonText: {
+      fontSize: 16,
+      color: theme.colors.primary,
+      fontWeight: 'bold',
+    },
+  });
 
 export default SignUpScreen;
