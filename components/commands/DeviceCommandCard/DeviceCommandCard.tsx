@@ -40,7 +40,7 @@ const DeviceCommandCard: React.FC<DeviceCommandCardProps> = ({
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     card: {
-      width: '90%',
+      width: '100%',
       marginVertical: 8,
       padding: 16,
     },

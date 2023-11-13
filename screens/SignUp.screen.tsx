@@ -8,8 +8,12 @@ import {
   TouchableRipple,
 } from 'react-native-paper';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-import { SIGN_IN_SCREEN } from '../navigation/navigation.constants';
+import {
+  RootStackParamList,
+  ScreensNames,
+} from '../navigation/navigation.constants';
 import { clearError, signUp } from '../store/slices/auth/auth.slice';
 import { AppDispatch } from '../store/store';
 import {
@@ -18,11 +22,14 @@ import {
 } from '../store/selectors/auth.selectors';
 import { AppTheme, useAppTheme } from '../AppTheme';
 
-type Props = {
-  navigation: any;
+type SignUpScreenProps = {
+  navigation: StackNavigationProp<
+    RootStackParamList,
+    ScreensNames.SIGN_UP_SCREEN
+  >;
 };
 
-const SignUpScreen: React.FC<Props> = ({ navigation }) => {
+const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
   const theme = useAppTheme();
   const styles = createStyles(theme);
   const dispatch: AppDispatch = useDispatch();
@@ -81,7 +88,8 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
       </Button>
       <View style={styles.footer}>
         <Text style={styles.footerText}>Already have an account? </Text>
-        <TouchableRipple onPress={() => navigation.navigate(SIGN_IN_SCREEN)}>
+        <TouchableRipple
+          onPress={() => navigation.navigate(ScreensNames.SIGN_IN_SCREEN)}>
           <Text style={styles.signInButtonText}>Sign In</Text>
         </TouchableRipple>
       </View>

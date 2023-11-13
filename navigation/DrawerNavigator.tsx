@@ -3,12 +3,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import DeviceCommandsScreen from '../screens/DeviceCommands.screen';
-import {
-  ACCOUNT_SCREEN,
-  DEVICE_SETTINGS_SCREEN,
-  COMMANDS_HISTORY_SCREEN,
-  DEVICE_COMMANDS_SCREEN, VIEW_DEVICE_LOG_SCREEN
-} from "./navigation.constants";
+import { ScreensNames } from './navigation.constants';
 import DrawerMenuContent from '../components/drawer/DrawerMenuContent/DrawerMenuContent';
 import AccountScreen from '../screens/Account.screen';
 import DeviceSettingsScreen from '../screens/DeviceSettings.screen';
@@ -20,7 +15,7 @@ const DrawerNavigator: React.FC = () => {
   return (
     <Drawer.Navigator drawerContent={props => <DrawerMenuContent {...props} />}>
       <Drawer.Screen
-        name={DEVICE_COMMANDS_SCREEN}
+        name={ScreensNames.DEVICE_COMMANDS_SCREEN}
         component={DeviceCommandsScreen}
         options={{
           drawerIcon: ({ color, size }) => (
@@ -29,7 +24,7 @@ const DrawerNavigator: React.FC = () => {
         }}
       />
       <Drawer.Screen
-        name={VIEW_DEVICE_LOG_SCREEN}
+        name={ScreensNames.VIEW_DEVICE_LOG_SCREEN}
         component={HistoryScreen}
         options={{
           drawerIcon: ({ color, size }) => (
@@ -38,7 +33,7 @@ const DrawerNavigator: React.FC = () => {
         }}
       />
       <Drawer.Screen // TODO disable on untrusted user
-        name={DEVICE_SETTINGS_SCREEN}
+        name={ScreensNames.DEVICE_SETTINGS_SCREEN}
         component={DeviceSettingsScreen}
         options={{
           drawerIcon: ({ color, size }) => (
@@ -47,7 +42,7 @@ const DrawerNavigator: React.FC = () => {
         }}
       />
       <Drawer.Screen
-        name={COMMANDS_HISTORY_SCREEN}
+        name={ScreensNames.COMMANDS_HISTORY_SCREEN}
         component={HistoryScreen}
         options={{
           drawerIcon: ({ color, size }) => (
@@ -56,7 +51,7 @@ const DrawerNavigator: React.FC = () => {
         }}
       />
       <Drawer.Screen
-        name={ACCOUNT_SCREEN}
+        name={ScreensNames.ACCOUNT_SCREEN}
         component={AccountScreen}
         options={{
           drawerIcon: ({ color, size }) => (

@@ -1,8 +1,17 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+
+import {
+  RootStackParamList,
+  ScreensNames,
+} from '../navigation/navigation.constants';
 
 type Props = {
-  navigation: any;
+  navigation: StackNavigationProp<
+    RootStackParamList,
+    ScreensNames.COMMANDS_HISTORY_SCREEN
+  >;
 };
 
 const HistoryScreen: React.FC<Props> = ({ navigation }) => {
