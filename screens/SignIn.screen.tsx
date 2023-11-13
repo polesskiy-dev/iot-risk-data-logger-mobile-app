@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import {
   Button,
   Snackbar,
@@ -38,54 +43,59 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  const submitSignIn = () => dispatch(signIn({ email, password }));
+  const handleSubmitSignIn = () => {
+    Keyboard.dismiss();
+    dispatch(signIn({ email, password }));
+  };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        style={styles.input}
-      />
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        mode="outlined"
-        secureTextEntry
-        style={styles.input}
-      />
-      <Button
-        mode="contained"
-        onPress={submitSignIn}
-        style={styles.button}
-        disabled={isLoading}
-        loading={isLoading}>
-        Sign In
-      </Button>
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account? </Text>
-        <TouchableRipple
-          onPress={() => navigation.navigate(ScreensNames.SIGN_UP_SCREEN)}>
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
-        </TouchableRipple>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <TextInput
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          mode="outlined"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={styles.input}
+        />
+        <TextInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          mode="outlined"
+          secureTextEntry
+          style={styles.input}
+        />
+        <Button
+          mode="contained"
+          onPress={handleSubmitSignIn}
+          style={styles.button}
+          disabled={isLoading}
+          loading={isLoading}>
+          Sign In
+        </Button>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account? </Text>
+          <TouchableRipple
+            onPress={() => navigation.navigate(ScreensNames.SIGN_UP_SCREEN)}>
+            <Text style={styles.signUpButtonText}>Sign Up</Text>
+          </TouchableRipple>
+        </View>
+        <Snackbar
+          visible={!!error}
+          onDismiss={() => dispatch(clearError())}
+          action={{
+            label: 'Close',
+            onPress: () => {
+              dispatch(clearError());
+            },
+          }}>
+          {error}
+        </Snackbar>
       </View>
-      <Snackbar
-        visible={!!error}
-        onDismiss={() => dispatch(clearError())}
-        action={{
-          label: 'Close',
-          onPress: () => {
-            dispatch(clearError());
-          },
-        }}>
-        {error}
-      </Snackbar>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 

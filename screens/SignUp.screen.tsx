@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import {
+  Keyboard,
+  StyleSheet,
+  View,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import {
   Button,
   Snackbar,
@@ -40,71 +45,76 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
 
-  const submitSignUp = () => dispatch(signUp({ email, fullName, password }));
+  const handleSubmitSignUp = () => {
+    Keyboard.dismiss();
+    dispatch(signUp({ email, fullName, password }));
+  };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        style={styles.input}
-      />
-      <TextInput
-        label="Full Name"
-        value={fullName}
-        onChangeText={setFullName}
-        mode="outlined"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        style={styles.input}
-      />
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        mode="outlined"
-        secureTextEntry
-        style={styles.input}
-      />
-      <TextInput
-        label="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        mode="outlined"
-        secureTextEntry
-        style={styles.input}
-      />
-      <Button
-        mode="contained"
-        onPress={submitSignUp}
-        style={styles.button}
-        loading={isLoading}
-        disabled={isLoading}>
-        Sign Up
-      </Button>
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account? </Text>
-        <TouchableRipple
-          onPress={() => navigation.navigate(ScreensNames.SIGN_IN_SCREEN)}>
-          <Text style={styles.signInButtonText}>Sign In</Text>
-        </TouchableRipple>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <TextInput
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          mode="outlined"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={styles.input}
+        />
+        <TextInput
+          label="Full Name"
+          value={fullName}
+          onChangeText={setFullName}
+          mode="outlined"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={styles.input}
+        />
+        <TextInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          mode="outlined"
+          secureTextEntry
+          style={styles.input}
+        />
+        <TextInput
+          label="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          mode="outlined"
+          secureTextEntry
+          style={styles.input}
+        />
+        <Button
+          mode="contained"
+          onPress={handleSubmitSignUp}
+          style={styles.button}
+          loading={isLoading}
+          disabled={isLoading}>
+          Sign Up
+        </Button>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account? </Text>
+          <TouchableRipple
+            onPress={() => navigation.navigate(ScreensNames.SIGN_IN_SCREEN)}>
+            <Text style={styles.signInButtonText}>Sign In</Text>
+          </TouchableRipple>
+        </View>
+        <Snackbar
+          visible={!!error}
+          onDismiss={() => dispatch(clearError())}
+          action={{
+            label: 'Close',
+            onPress: () => {
+              dispatch(clearError());
+            },
+          }}>
+          {error}
+        </Snackbar>
       </View>
-      <Snackbar
-        visible={!!error}
-        onDismiss={() => dispatch(clearError())}
-        action={{
-          label: 'Close',
-          onPress: () => {
-            dispatch(clearError());
-          },
-        }}>
-        {error}
-      </Snackbar>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 

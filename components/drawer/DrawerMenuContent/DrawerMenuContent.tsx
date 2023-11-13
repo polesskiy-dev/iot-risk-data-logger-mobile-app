@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import {
   DrawerContentComponentProps,
   DrawerContentScrollView,
+  DrawerItem,
   DrawerItemList,
 } from '@react-navigation/drawer';
 import { Button, Divider, Text } from 'react-native-paper';
@@ -28,23 +29,14 @@ const DrawerMenuContent: React.FC<DrawerContentComponentProps> = props => {
         <DrawerUserProfileHeader />
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
-      <Divider style={styles.divider} />
-      <View style={styles.footer}>
-        <Button
-          mode="text"
-          onPress={handleSignOut}
-          icon={() => (
-            <MaterialCommunityIcons
-              name="logout"
-              size={24}
-              style={styles.footer.icons}
-            />
-          )}
-          labelStyle={styles.footer.buttonsText}
-        >
-          Sign Out
-        </Button>
-      </View>
+      <Divider />
+      <DrawerItem
+        label="Sign Out"
+        icon={({ color, size }) => (
+          <MaterialCommunityIcons name="logout" color={color} size={size} />
+        )}
+        onPress={handleSignOut}
+      />
     </View>
   );
 };
@@ -54,23 +46,6 @@ const createStyles = (theme: AppTheme) =>
     container: {
       flex: 1,
       justifyContent: 'space-between',
-    },
-    footer: {
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-      marginBottom: 8,
-      marginLeft: 8,
-      icons: {
-        marginRight: 20,
-        color: theme.colors.secondary
-      },
-      buttonsText: {
-        color: theme.colors.secondary
-      }
-    },
-    divider: {
-      marginTop: 8,
-      marginBottom: 8,
     },
   });
 
