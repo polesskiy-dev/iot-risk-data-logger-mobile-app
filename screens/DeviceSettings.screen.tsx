@@ -21,4 +21,5 @@ const DeviceSettingsScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {},
 });
+
 export default DeviceSettingsScreen;
