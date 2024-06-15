@@ -2,7 +2,8 @@ import { RootState } from '../store';
 
 export const userSelector = (state: RootState) => state.user.user;
 export const userNameSelector = (state: RootState): string =>
-  state.user.user?.UserAttributes?.find((attr) => attr.Name === 'custom:FullName')?.Value ?? '';
+  state.user.user?.UserAttributes?.find(attr => attr.Name === 'custom:FullName')
+    ?.Value ?? '';
 
 export const userInitialsSelector = (state: RootState): string => {
   const userName = userNameSelector(state);
@@ -13,4 +14,5 @@ export const userInitialsSelector = (state: RootState): string => {
 };
 
 export const userEmailSelector = (state: RootState): string =>
-  state.user.user?.UserAttributes?.find((attr) => attr.Name === 'email')?.Value ?? '';
+  state.user.user?.UserAttributes?.find(attr => attr.Name === 'email')?.Value ??
+  '';

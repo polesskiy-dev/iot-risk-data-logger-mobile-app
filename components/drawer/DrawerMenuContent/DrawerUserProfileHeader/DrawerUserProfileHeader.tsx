@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   userPreview: {
-    marginBottom: 16
+    marginBottom: 16,
   },
   name: {},
   userProfile: {},

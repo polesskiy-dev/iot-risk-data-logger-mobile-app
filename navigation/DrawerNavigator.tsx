@@ -2,12 +2,13 @@ import * as React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import DeviceCommandsScreen from '../screens/DeviceCommands.screen';
+import DeviceCommandsScreen from '../screens/DeviceBasicOperations/DeviceCommands.screen';
 import { ScreensNames } from './navigation.constants';
 import DrawerMenuContent from '../components/drawer/DrawerMenuContent/DrawerMenuContent';
 import AccountScreen from '../screens/Account.screen';
 import DeviceSettingsScreen from '../screens/DeviceSettings.screen';
 import HistoryScreen from '../screens/History.screen';
+import DeviceBasicOperationsNavigator from './DeviceBasicOperationsNavigator';
 
 const Drawer = createDrawerNavigator();
 
@@ -15,9 +16,10 @@ const DrawerNavigator: React.FC = () => {
   return (
     <Drawer.Navigator drawerContent={props => <DrawerMenuContent {...props} />}>
       <Drawer.Screen
-        name={ScreensNames.DEVICE_COMMANDS_SCREEN}
-        component={DeviceCommandsScreen}
+        name={ScreensNames.DEVICE_BASIC_OPERATIONS_NAVIGATOR}
+        component={DeviceBasicOperationsNavigator}
         options={{
+          headerShown: false,
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="nfc" color={color} size={size} />
           ),

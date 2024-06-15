@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, SafeAreaView } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 import {
@@ -15,7 +15,7 @@ type Props = {
 };
 
 const AccountScreen: React.FC<Props> = ({ navigation }) => {
-  return <View style={styles.container} />;
+  return <SafeAreaView style={styles.container} />;
 };
 
 const styles = StyleSheet.create({

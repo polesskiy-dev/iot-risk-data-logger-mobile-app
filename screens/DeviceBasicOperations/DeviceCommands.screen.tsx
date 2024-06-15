@@ -1,15 +1,17 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, SafeAreaView } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { Stagger } from '@animatereactnative/stagger';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-import { AppTheme, useAppTheme } from '../AppTheme';
-import DeviceCommandCard from '../components/commands/DeviceCommandCard/DeviceCommandCard';
+import { AppTheme, useAppTheme } from '../../AppTheme';
+import DeviceCommandCard from '../../components/commands/DeviceCommandCard/DeviceCommandCard';
 import {
   RootStackParamList,
   ScreensNames,
-} from '../navigation/navigation.constants';
+} from '../../navigation/navigation.constants';
+import { useAppDispatch } from '../../hooks';
+import { nfcReadDeviceInfo } from '../../store/slices/deviceInfo/deviceInfo.thunks';
 
 type Props = {
   navigation: StackNavigationProp<
@@ -22,20 +24,23 @@ const DeviceCommandsScreen: React.FC<Props> = ({ navigation }) => {
   const theme = useAppTheme();
   const styles = createStyles(theme);
   const isFocused = useIsFocused();
+
+  const dispatch = useAppDispatch();
+
   const handleCommand = (command: string) => {
     console.log(`Executing command: ${command}`);
     // TODO Add logic to execute the command
   };
 
+  // TODO navigation.navigate(ScreensNames.DEVICE_INFO_SCREEN)
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {isFocused && (
         <Stagger
           stagger={50}
           duration={300}
           exitDirection={-1}
-          // entering={() => ZoomInEasyDown.springify()}
-          // exiting={() => FadeOutDown.springify()}
           style={{ ...styles.cardContainer }}>
           <DeviceCommandCard
             title="Start Logging"
@@ -64,9 +69,16 @@ const DeviceCommandsScreen: React.FC<Props> = ({ navigation }) => {
             onPress={() => handleCommand('pullLog')}
             description="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
           />
+          ,
+          <DeviceCommandCard
+            title="Read Device Info"
+            iconName="information"
+            onPress={() => dispatch(nfcReadDeviceInfo(navigation))}
+            description="Fetch device information: serial number, model, chips info etc."
+          />
         </Stagger>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
