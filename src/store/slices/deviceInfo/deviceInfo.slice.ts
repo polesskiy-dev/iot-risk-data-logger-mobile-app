@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { TagEvent } from 'react-native-nfc-manager';
+
 import { nfcReadDeviceInfo } from './deviceInfo.thunks';
 
 interface IDeviceInfo {
