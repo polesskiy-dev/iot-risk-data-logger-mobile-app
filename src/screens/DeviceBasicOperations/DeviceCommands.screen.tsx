@@ -12,6 +12,7 @@ import {
 } from '../../navigation/navigation.constants';
 import { useAppDispatch } from '../../hooks';
 import { nfcReadDeviceInfo } from '../../store/slices/deviceInfo/deviceInfo.thunks';
+import nfcService from '../../services/nfc/nfc.service';
 
 type Props = {
   navigation: StackNavigationProp<
@@ -45,7 +46,8 @@ const DeviceCommandsScreen: React.FC<Props> = ({ navigation }) => {
           <DeviceCommandCard
             title="Start Logging"
             iconName="play"
-            onPress={() => handleCommand('startLogging')}
+            // onPress={() => handleCommand('startLogging')}
+            onPress={async () => await nfcService.testCmd()}
             description="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
           />
           ,
