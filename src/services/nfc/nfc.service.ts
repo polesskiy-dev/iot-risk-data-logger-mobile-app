@@ -1,6 +1,8 @@
 import { NfcError } from 'react-native-nfc-manager';
 
 import ST25DV from '../../drivers/ST25DV/st25dv';
+import { register8bToInfoString } from '../../drivers/ST25DV/st25dv.utils';
+import { MB_CTRL_Dyn_SHIFT, MB_CTRL_Dyn_VAL } from '../../drivers/ST25DV/st25dv.constants';
 
 class NfcService {
   private nfcDriver: InstanceType<typeof ST25DV>;
@@ -22,6 +24,7 @@ class NfcService {
 
       resp = await this.nfcDriver.readMailboxConfig();
       console.log('readMailboxConfig()', resp);
+      console.log(register8bToInfoString(resp[0], 'MB_CTRL_Dyn', MB_CTRL_Dyn_SHIFT, MB_CTRL_Dyn_VAL));
 
       resp = await this.nfcDriver.enableMailbox();
       console.log('enableMailbox()', resp);

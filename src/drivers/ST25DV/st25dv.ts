@@ -39,7 +39,6 @@
 import NfcManager, {
   NfcTech,
   Nfc15693RequestFlagIOS,
-  NfcEvents,
 } from 'react-native-nfc-manager';
 import {
   CMD,
@@ -48,7 +47,6 @@ import {
   MB_CTRL_Dyn_SHIFT,
   MB_CTRL_Dyn_VAL,
   RF_REGISTER_ADDRESS,
-  ST25DV_PWD1_NUM,
   ST25DV_REQUEST_HEADER_MF_CODE,
   ST25DV_RF_PWD_0_NUMBER,
 } from './st25dv.constants';
@@ -79,43 +77,6 @@ export default class ST25DV {
     return await NfcManager.cancelTechnologyRequest();
   }
 
-  // async readRegister(registerAddress: number) {
-  //   try {
-  //     await this.requestNfcV();
-  //
-  //     const cmd = [
-  //       ST25DV_REQUEST_HEADER,
-  //       CMD.READ_SINGLE_BLOCK,
-  //       registerAddress,
-  //     ];
-  //     const response = await NfcManager.transceive(cmd);
-  //     console.log('Register Value:', response);
-  //   } catch (ex) {
-  //     console.warn(ex);
-  //   } finally {
-  //     NfcManager.cancelTechnologyRequest();
-  //   }
-  // }
-  //
-  // async writeRegister(registerAddress: number, value: number) {
-  //   try {
-  //     await this.requestNfcV();
-  //
-  //     const cmd = [
-  //       ST25DV_REQUEST_HEADER,
-  //       CMD.WRITE_SINGLE_BLOCK,
-  //       registerAddress,
-  //       value,
-  //     ];
-  //     await NfcManager.transceive(cmd);
-  //     console.log('Register written successfully');
-  //   } catch (ex) {
-  //     console.warn(ex);
-  //   } finally {
-  //     NfcManager.cancelTechnologyRequest();
-  //   }
-  // }
-
   async readBasicTagInfo() {
     try {
       await this.requestNfcTechnology();
@@ -130,18 +91,6 @@ export default class ST25DV {
     }
   }
 
-  async configureGPO(GPOConfig: number) {
-    const cmd = [
-      ST25DV_REQUEST_HEADER_MF_CODE,
-      CMD.WRITE_CONFIGURATION,
-      CMD_STANDARD_SIZE_BYTES,
-      RF_REGISTER_ADDRESS.GPO_CTRL_Dyn,
-      GPOConfig,
-    ];
-
-    return await NfcManager.transceive(cmd);
-  }
-
   /**
    * @note The iOS CoreNFC custom command works only in NON-ADDRESSED mode.
    * @see https://developer.apple.com/documentation/corenfc/nfciso15693tag#3214383
@@ -151,7 +100,7 @@ export default class ST25DV {
       flags: Nfc15693RequestFlagIOS.HighDataRate,
       customCommandCode: CMD.PRESENT_PASSWORD,
       customRequestParameters: [
-        //data = PasswordNumber + Password Value.
+        // PasswordNumber + Password Value.
         ST25DV_RF_PWD_0_NUMBER,
         ...DEFAULT_RF_PASSWORD,
       ],
