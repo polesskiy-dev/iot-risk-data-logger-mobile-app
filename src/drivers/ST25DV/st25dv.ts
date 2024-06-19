@@ -2,8 +2,10 @@
  * @file ST25DV.ts
  * @brief Driver for NFC operations with ST ST25DV NFC tag
  * @details ST25DV is a dynamic NFC/RFID tag IC for IoT, connected objects, and industrial applications.
+ *
  * @link https://www.st.com/en/nfc/st25dv04k.html
  * @link https://www.st.com/resource/en/datasheet/st25dv04k.pdf
+ * @link https://www.st.com/resource/en/application_note/an4910-data-exchange-between-wired-ic-and-wireless-rf-iso-15693-using-fast-transfer-mode-supported-by-st25dvi2c-series-stmicroelectronics.pdf
  *
  * Memory organization:
  * ST25DV memory consists of blocks, addressed by ENDAi
@@ -20,6 +22,8 @@
  * in one shot, always starting at mailbox address 00h. No password is needed to access mailbox from RF, but fast
  * transfer mode must be enabled.
  *
+ * @note Particular data sequence could be found in AN4910 application note.
+ *
  * The RF Control & Access to mailbox is possible using dedicated custom commands:
  * - Read Dynamic Configuration and Fast Read Dynamic Configuration to check availability of mailbox.
  * - Write Dynamic Configuration and Fast Write Dynamic configuration to enable or disable fast transfer mode.
@@ -27,13 +31,6 @@
  * - Read Message and Fast Read Message to download the content of the mailbox,
  * - Write Message and Fast Write Message to put a new message in mailbox. (New length is automatically
  * updated after completion of a successful Write Message or Fast Write Message command).
- *
- * System Command description:
- * - request header (1 byte - 0x02)
- * - command code (1 byte)
- * - command size (1 byte - 2 bytes for standard commands)
- * - register address (1 byte)
- * - register value (1 byte)
  *
  */
 import NfcManager, {
@@ -43,7 +40,7 @@ import NfcManager, {
 import {
   CMD,
   CMD_STANDARD_SIZE_BYTES,
-  DEFAULT_RF_PASSWORD,
+  DEFAULT_RF_PASSWORD, GPO_CTRL_Dyn_SHIFT, GPO_CTRL_Dyn_VAL,
   MB_CTRL_Dyn_SHIFT,
   MB_CTRL_Dyn_VAL,
   RF_REGISTER_ADDRESS,
@@ -111,9 +108,7 @@ export default class ST25DV {
     return await NfcManager.iso15693HandlerIOS.customCommand({
       flags: Nfc15693RequestFlagIOS.HighDataRate,
       customCommandCode: CMD.READ_CONFIGURATION,
-      customRequestParameters: [
-        RF_REGISTER_ADDRESS.MB_MODE,
-      ],
+      customRequestParameters: [RF_REGISTER_ADDRESS.MB_MODE],
     });
   }
 
@@ -126,6 +121,26 @@ export default class ST25DV {
       customRequestParameters: [
         RF_REGISTER_ADDRESS.MB_MODE,
         MB_CTRL_Dyn_VAL.ENABLE_FTM << MB_CTRL_Dyn_SHIFT.MB_EN, // Enable mailbox
+      ],
+    });
+  }
+
+  async readGPOControl() {
+    return await NfcManager.iso15693HandlerIOS.customCommand({
+      flags: Nfc15693RequestFlagIOS.HighDataRate,
+      customCommandCode: CMD.READ_CONFIGURATION,
+      customRequestParameters: [RF_REGISTER_ADDRESS.GPO_CTRL_Dyn],
+    });
+  }
+
+  async configureGPOControl() {
+    return await NfcManager.iso15693HandlerIOS.customCommand({
+      flags: Nfc15693RequestFlagIOS.HighDataRate,
+      customCommandCode: CMD.WRITE_CONFIGURATION,
+      customRequestParameters: [RF_REGISTER_ADDRESS.GPO_CTRL_Dyn,
+        GPO_CTRL_Dyn_VAL.ENABLED_GPO_OUTPUT << GPO_CTRL_Dyn_SHIFT.GPO_EN
+        | GPO_CTRL_Dyn_VAL.PULSE_ON_WM_EOM << GPO_CTRL_Dyn_SHIFT.RF_GET_MSG_EN
+        | GPO_CTRL_Dyn_VAL.PULSE_ON_WM_COMPLETE << GPO_CTRL_Dyn_SHIFT.RF_PUT_MSG_EN
       ],
     });
   }

@@ -62,3 +62,33 @@ export const MB_CTRL_Dyn_VAL = {
   NO_MESSAGE_OR_MESSAGE_NOT_FROM_RF: 0x00,
   MESSAGE_IN_MB_IS_FROM_RF: 0x01,
 };
+
+export enum GPO_CTRL_Dyn_SHIFT {
+  RF_USER_EN = 0,
+  RF_ACTIVITY_EN,
+  RF_INTERRUPT_EN,
+  FIELD_CHANGE_EN,
+  RF_PUT_MSG_EN,
+  RF_GET_MSG_EN,
+  RF_WRITE_EN,
+  GPO_EN,
+}
+
+export const GPO_CTRL_Dyn_VAL = {
+  DISABLED_RF_USER: 0x00,
+  LEVEL_MANAGED_BY_GPO_COMMAND_SET: 0x01, // GPO output level is controlled by Manage GPO Command (set/reset)
+  DISABLED_ACTIVITY: 0x00,
+  LEVEL_CHANGES_BY_RF_EOF: 0x01, // GPO output level changes from RF command EOF to response EOF
+  DISABLED_INTERRUPT: 0x00,
+  LEVEL_MANAGED_BY_GPO_COMMAND_PULSE: 0x01, // : GPO output level is controlled by Manage GPO Command (pulse).
+  DISABLED_FIELD_CHANGE: 0x00,
+  PULSE_ON_RF_FIELD: 0x01, // A pulse is emitted on GPO, when RF field appears or disappears.
+  DISABLED_RF_PUT_MSG: 0x00,
+  PULSE_ON_WM_COMPLETE: 0x01, // A pulse is emitted on GPO at completion of valid RF Write Message command.
+  DISABLED_GET_MSG: 0x00,
+  PULSE_ON_WM_EOM: 0x01, // A pulse is emitted on GPO at completion of valid RF Read Message command if end of message has been reached.
+  DISABLED_WRITE: 0x00,
+  PULSE_ON_WM_COMPLETE_EEPROM: 0x01, // A pulse is emitted on GPO at completion of valid RF write operation in EEPROM.
+  DISABLED_GPO_OUTPUT: 0x00,
+  ENABLED_GPO_OUTPUT: 0x01,
+};
