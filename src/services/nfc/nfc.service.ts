@@ -7,6 +7,8 @@ import {
   GPO_CTRL_Dyn_VAL,
   MB_CTRL_Dyn_SHIFT,
   MB_CTRL_Dyn_VAL,
+  MB_MODE_SHIFT,
+  MB_MODE_VAL,
 } from '../../drivers/ST25DV/st25dv.constants';
 
 class NfcService {
@@ -21,19 +23,19 @@ class NfcService {
     return { tag };
   }
 
-  async prepareMailbox() {
-    try {
-      await this.nfcDriver.requestNfcTechnology();
-      await this.nfcDriver.presentRFPassword();
-      await this.nfcDriver.configureGPOControl();
-      await this.nfcDriver.enableMailbox();
-    } catch (ex: unknown) {
-      console.error((ex as NfcError.NfcErrorBase).constructor.name);
-      throw ex;
-    } finally {
-      await this.nfcDriver.cancelTechnologyRequest();
-    }
-  }
+  // async writeMessageToMailbox(message: Uint8Array[]) {
+  //   try {
+  //     await this.nfcDriver.requestNfcTechnology();
+  //     await this.nfcDriver.presentRFPassword();
+  //     await this.nfcDriver.configureGPOControl();
+  //     await this.nfcDriver.enableMailbox();
+  //   } catch (ex: unknown) {
+  //     console.error((ex as NfcError.NfcErrorBase).constructor.name);
+  //     throw ex;
+  //   } finally {
+  //     await this.nfcDriver.cancelTechnologyRequest();
+  //   }
+  // }
 
   async testCmd() {
     try {
@@ -41,6 +43,7 @@ class NfcService {
       let resp = await this.nfcDriver.presentRFPassword();
       console.log('presentRFPassword(): ', resp);
 
+      // configure GPO
       resp = await this.nfcDriver.configureGPOControl();
       console.log('configureGPOControl()', resp);
 
@@ -55,22 +58,39 @@ class NfcService {
         ),
       );
 
+      // enable FTM
       resp = await this.nfcDriver.enableMailbox();
       console.log('enableMailbox()', resp);
 
-      resp = await this.nfcDriver.readMailboxConfig();
-      console.log('readMailboxConfig()', resp);
+      resp = await this.nfcDriver.readMailboxMode();
+      console.log('readMailboxMode()', resp);
+      console.log(
+        register8bToInfoString(resp[0], 'MB_MODE', MB_MODE_SHIFT, MB_MODE_VAL),
+      );
+
+      // init FTM
+      resp = await this.nfcDriver.initMailbox();
+      console.log('initMailbox()', resp);
+
+      resp = await this.nfcDriver.readMailboxControl();
+      console.log('readMailboxControl()', resp);
       console.log(
         register8bToInfoString(
           resp[0],
-          'MB_MODE',
+          'MB_CTRL_Dyn',
           MB_CTRL_Dyn_SHIFT,
           MB_CTRL_Dyn_VAL,
         ),
       );
+
+      // test MB message
+      resp = await this.nfcDriver.writeMailboxMessage([
+        0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+      ]);
+      console.log('writeMailboxMessage()', resp);
     } catch (ex) {
       // TODO handle TagConnectionLost
-      console.warn(JSON.stringify(ex, Object.getOwnPropertyNames(ex)));
+      // console.warn(JSON.stringify(ex, Object.getOwnPropertyNames(ex)));
       console.warn((ex as NfcError.NfcErrorBase).constructor.name);
     } finally {
       await this.nfcDriver.cancelTechnologyRequest();

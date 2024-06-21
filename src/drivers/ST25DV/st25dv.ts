@@ -40,9 +40,14 @@ import NfcManager, {
 import {
   CMD,
   CMD_STANDARD_SIZE_BYTES,
-  DEFAULT_RF_PASSWORD, GPO_CTRL_Dyn_SHIFT, GPO_CTRL_Dyn_VAL,
+  DEFAULT_RF_PASSWORD,
+  GPO_CTRL_Dyn_SHIFT,
+  GPO_CTRL_Dyn_VAL,
+  MAILBOX_START_ADDRESS,
   MB_CTRL_Dyn_SHIFT,
   MB_CTRL_Dyn_VAL,
+  MB_MODE_SHIFT,
+  MB_MODE_VAL,
   RF_REGISTER_ADDRESS,
   ST25DV_REQUEST_HEADER_MF_CODE,
   ST25DV_RF_PWD_0_NUMBER,
@@ -104,11 +109,19 @@ export default class ST25DV {
     });
   }
 
-  async readMailboxConfig() {
+  async readMailboxMode() {
     return await NfcManager.iso15693HandlerIOS.customCommand({
       flags: Nfc15693RequestFlagIOS.HighDataRate,
       customCommandCode: CMD.READ_CONFIGURATION,
       customRequestParameters: [RF_REGISTER_ADDRESS.MB_MODE],
+    });
+  }
+
+  async readMailboxControl() {
+    return await NfcManager.iso15693HandlerIOS.customCommand({
+      flags: Nfc15693RequestFlagIOS.HighDataRate,
+      customCommandCode: CMD.READ_DYN_CONFIGURATION,
+      customRequestParameters: [RF_REGISTER_ADDRESS.MB_CTRL_Dyn],
     });
   }
 
@@ -120,8 +133,36 @@ export default class ST25DV {
       customCommandCode: CMD.WRITE_CONFIGURATION,
       customRequestParameters: [
         RF_REGISTER_ADDRESS.MB_MODE,
+        MB_MODE_VAL.ENABLE_FTM << MB_MODE_SHIFT.MB_MODE, // Enable mailbox
+      ],
+    });
+  }
+
+  async initMailbox() {
+    console.log(
+      'Write to MB_CTRL_Dyn: ',
+      MB_CTRL_Dyn_VAL.ENABLE_FTM << MB_CTRL_Dyn_SHIFT.MB_EN,
+    );
+    return await NfcManager.iso15693HandlerIOS.customCommand({
+      flags: Nfc15693RequestFlagIOS.HighDataRate,
+      customCommandCode: CMD.WRITE_DYN_CONFIGURATION,
+      customRequestParameters: [
+        RF_REGISTER_ADDRESS.MB_CTRL_Dyn,
         MB_CTRL_Dyn_VAL.ENABLE_FTM << MB_CTRL_Dyn_SHIFT.MB_EN, // Enable mailbox
       ],
+    });
+  }
+
+  async writeMailboxMessage(message: number[]) {
+    const messageLength = message.length;
+    if (messageLength > 256) {
+      throw new Error('Message length is greater than 256 bytes');
+    }
+
+    return await NfcManager.iso15693HandlerIOS.customCommand({
+      flags: Nfc15693RequestFlagIOS.HighDataRate,
+      customCommandCode: CMD.WRITE_MAILBOX_MESSAGE,
+      customRequestParameters: [messageLength - 1, ...message],
     });
   }
 
@@ -129,7 +170,7 @@ export default class ST25DV {
     return await NfcManager.iso15693HandlerIOS.customCommand({
       flags: Nfc15693RequestFlagIOS.HighDataRate,
       customCommandCode: CMD.READ_CONFIGURATION,
-      customRequestParameters: [RF_REGISTER_ADDRESS.GPO_CTRL_Dyn],
+      customRequestParameters: [RF_REGISTER_ADDRESS.GPO_CTRL],
     });
   }
 
@@ -137,10 +178,13 @@ export default class ST25DV {
     return await NfcManager.iso15693HandlerIOS.customCommand({
       flags: Nfc15693RequestFlagIOS.HighDataRate,
       customCommandCode: CMD.WRITE_CONFIGURATION,
-      customRequestParameters: [RF_REGISTER_ADDRESS.GPO_CTRL_Dyn,
-        GPO_CTRL_Dyn_VAL.ENABLED_GPO_OUTPUT << GPO_CTRL_Dyn_SHIFT.GPO_EN
-        | GPO_CTRL_Dyn_VAL.PULSE_ON_WM_EOM << GPO_CTRL_Dyn_SHIFT.RF_GET_MSG_EN
-        | GPO_CTRL_Dyn_VAL.PULSE_ON_WM_COMPLETE << GPO_CTRL_Dyn_SHIFT.RF_PUT_MSG_EN
+      customRequestParameters: [
+        RF_REGISTER_ADDRESS.GPO_CTRL,
+        (GPO_CTRL_Dyn_VAL.ENABLED_GPO_OUTPUT << GPO_CTRL_Dyn_SHIFT.GPO_EN) |
+          (GPO_CTRL_Dyn_VAL.PULSE_ON_WM_EOM <<
+            GPO_CTRL_Dyn_SHIFT.RF_GET_MSG_EN) |
+          (GPO_CTRL_Dyn_VAL.PULSE_ON_WM_COMPLETE <<
+            GPO_CTRL_Dyn_SHIFT.RF_PUT_MSG_EN),
       ],
     });
   }

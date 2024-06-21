@@ -7,31 +7,74 @@ export const DEFAULT_RF_PASSWORD = [
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 ];
 
+/**
+ * ST25DV Commands list
+ * @link https://www.st.com/resource/en/datasheet/st25dv04k.pdf#page=81
+ */
 export enum CMD {
   READ_SINGLE_BLOCK = 0x20,
   WRITE_SINGLE_BLOCK = 0x21,
   /**
    * System configuration registers commands
-   * @note For ISO15693 it's ustom command (0xA0 to 0xDF command code)
+   * @note For ISO15693 it's custom command (0xA0 to 0xDF command code)
    */
   READ_CONFIGURATION = 0xa0,
   WRITE_CONFIGURATION = 0xa1,
   READ_DYN_CONFIGURATION = 0xad,
   WRITE_DYN_CONFIGURATION = 0xae,
+  MANAGE_GPO = 0xa9, // emits a pulse on GPO
   /**
-   * special commands
+   * Mailbox commands
+   */
+  WRITE_MAILBOX_MESSAGE = 0xaa,
+  READ_MAILBOX_MESSAGE_LENGTH = 0xab,
+  READ_MAILBOX_MESSAGE = 0xac,
+  /**
+   * Special commands
    * @note some special commands doesn't require register address
    */
   PRESENT_PASSWORD = 0xb3,
   READ_MAILBOX_MSG_LENGTH = 0xab,
 }
 
+export const MAILBOX_START_ADDRESS = 0x00;
+
 // TODO: _Dyn registers are reset after POR, thereby we need to set them on device configuring
 export enum RF_REGISTER_ADDRESS {
-  GPO_CTRL_Dyn = 0x00, // GPO control
+  GPO_CTRL = 0x00, // GPO control
   MB_MODE = 0x0d, // Mailbox, Fast transfer mode control and status
   MB_CTRL_Dyn = 0x0d, // Mailbox, Fast transfer mode control and status
 }
+
+export enum MB_MODE_SHIFT {
+  MB_MODE = 0,
+  RFU1,
+  RFU2,
+  RFU3,
+  RFU4,
+  RFU5,
+  RFU6,
+  RFU7,
+}
+
+export const MB_MODE_VAL = {
+  DISABLE_FTM: 0x00,
+  ENABLE_FTM: 0x01,
+  RFU0: 0x00,
+  RFU1: 0x00,
+  RFU2: 0x00,
+  RFU3: 0x00,
+  RFU4: 0x00,
+  RFU5: 0x00,
+  RFU6: 0x00,
+  RFU7: 0x00,
+  RFU8: 0x00,
+  RFU9: 0x00,
+  RFU10: 0x00,
+  RFU11: 0x00,
+  RFU12: 0x00,
+  RFU13: 0x00,
+};
 
 export enum MB_CTRL_Dyn_SHIFT {
   MB_EN = 0,
@@ -68,8 +111,8 @@ export enum GPO_CTRL_Dyn_SHIFT {
   RF_ACTIVITY_EN,
   RF_INTERRUPT_EN,
   FIELD_CHANGE_EN,
-  RF_PUT_MSG_EN,
-  RF_GET_MSG_EN,
+  RF_PUT_MSG_EN, // Enabling this bit will generate a pulse on GPO on Mailbox message RF write completion
+  RF_GET_MSG_EN, // Enabling this bit will generate a pulse on GPO on Mailbox message RF read completion
   RF_WRITE_EN,
   GPO_EN,
 }

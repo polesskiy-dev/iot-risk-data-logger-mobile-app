@@ -5,7 +5,7 @@ export const register8bToInfoString = (
   registerValuesMap: Record<string, number>,
 ): string => {
   let infoString = `${registerName}: `;
-  if (!register)
+  if (register === undefined || register === null)
     return infoString.concat('Undefined value, please verify it\n');
 
   // register value in HEX and BIN
