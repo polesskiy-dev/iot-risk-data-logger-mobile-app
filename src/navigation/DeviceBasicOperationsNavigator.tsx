@@ -13,7 +13,7 @@ const DeviceBasicOperationsNavigator: React.FC = () => {
       <Stack.Screen
         name={ScreensNames.DEVICE_COMMANDS_SCREEN}
         component={DeviceCommandsScreen}
-        options={{ title: 'Device Commands' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name={ScreensNames.DEVICE_INFO_SCREEN}

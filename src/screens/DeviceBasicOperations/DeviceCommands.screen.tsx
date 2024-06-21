@@ -87,6 +87,7 @@ const DeviceCommandsScreen: React.FC<Props> = ({ navigation }) => {
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
+      marginTop: 16,
       padding: 16,
     },
     cardContainer: {

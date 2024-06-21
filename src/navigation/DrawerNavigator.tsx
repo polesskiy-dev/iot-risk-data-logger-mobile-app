@@ -19,7 +19,7 @@ const DrawerNavigator: React.FC = () => {
         name={ScreensNames.DEVICE_BASIC_OPERATIONS_NAVIGATOR}
         component={DeviceBasicOperationsNavigator}
         options={{
-          headerShown: false,
+          title: 'Device Operations',
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="nfc" color={color} size={size} />
           ),
