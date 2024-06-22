@@ -1,5 +1,5 @@
 export const ST25DV_REQUEST_HEADER_MF_CODE = 0x02;
-export const CMD_STANDARD_SIZE_BYTES = 0x02;
+export const ST25DV_HIGH_DATA_RATE_HEADER = 0x02;
 
 export const ST25DV_RF_PWD_0_NUMBER = 0x00;
 
@@ -24,24 +24,23 @@ export enum CMD {
   WRITE_DYN_CONFIGURATION = 0xae,
   MANAGE_GPO = 0xa9, // emits a pulse on GPO
   /**
-   * Mailbox commands
-   */
-  WRITE_MAILBOX_MESSAGE = 0xaa,
-  READ_MAILBOX_MESSAGE_LENGTH = 0xab,
-  READ_MAILBOX_MESSAGE = 0xac,
-  /**
    * Special commands
    * @note some special commands doesn't require register address
    */
   PRESENT_PASSWORD = 0xb3,
-  READ_MAILBOX_MSG_LENGTH = 0xab,
+  /**
+   * Mailbox commands
+   */
+  FAST_WRITE_MAILBOX_MESSAGE = 0xaa, // 0xca,
+  FAST_READ_MAILBOX_MESSAGE_LENGTH = 0xcb,
+  FAST_READ_MAILBOX_MESSAGE = 0xcc,
 }
 
 export const MAILBOX_START_ADDRESS = 0x00;
 
 // TODO: _Dyn registers are reset after POR, thereby we need to set them on device configuring
 export enum RF_REGISTER_ADDRESS {
-  GPO_CTRL = 0x00, // GPO control
+  GPO_CTRL_Dyn = 0x00, // GPO control
   MB_MODE = 0x0d, // Mailbox, Fast transfer mode control and status
   MB_CTRL_Dyn = 0x0d, // Mailbox, Fast transfer mode control and status
 }

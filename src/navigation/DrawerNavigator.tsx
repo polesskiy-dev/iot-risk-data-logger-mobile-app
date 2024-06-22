@@ -2,7 +2,6 @@ import * as React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import DeviceCommandsScreen from '../screens/DeviceBasicOperations/DeviceCommands.screen';
 import { ScreensNames } from './navigation.constants';
 import DrawerMenuContent from '../components/drawer/DrawerMenuContent/DrawerMenuContent';
 import AccountScreen from '../screens/Account.screen';

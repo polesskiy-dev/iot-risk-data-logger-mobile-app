@@ -4,6 +4,7 @@
  * @details ST25DV is a dynamic NFC/RFID tag IC for IoT, connected objects, and industrial applications.
  *
  * @link https://www.st.com/en/nfc/st25dv04k.html
+ * @link https://www.st.com/resource/en/product_presentation/st25tv_product_presentation-may2018.pdf
  * @link https://www.st.com/resource/en/datasheet/st25dv04k.pdf
  * @link https://www.st.com/resource/en/application_note/an4910-data-exchange-between-wired-ic-and-wireless-rf-iso-15693-using-fast-transfer-mode-supported-by-st25dvi2c-series-stmicroelectronics.pdf
  *
@@ -33,159 +34,97 @@
  * updated after completion of a successful Write Message or Fast Write Message command).
  *
  */
-import NfcManager, {
-  NfcTech,
-  Nfc15693RequestFlagIOS,
-} from 'react-native-nfc-manager';
-import {
-  CMD,
-  CMD_STANDARD_SIZE_BYTES,
-  DEFAULT_RF_PASSWORD,
-  GPO_CTRL_Dyn_SHIFT,
-  GPO_CTRL_Dyn_VAL,
-  MAILBOX_START_ADDRESS,
-  MB_CTRL_Dyn_SHIFT,
-  MB_CTRL_Dyn_VAL,
-  MB_MODE_SHIFT,
-  MB_MODE_VAL,
-  RF_REGISTER_ADDRESS,
-  ST25DV_REQUEST_HEADER_MF_CODE,
-  ST25DV_RF_PWD_0_NUMBER,
-} from './st25dv.constants';
+import { TagEvent } from 'react-native-nfc-manager';
 
-export default class ST25DV {
-  constructor() {
-    // Pre-step, call this before any NFC operations
-    NfcManager.start();
-    console.log('NFC Manager started');
-  }
+export type LoggerFunction = (...args: Parameters<typeof console.log>) => void;
 
+export interface ST25DV {
   /**
-   * @brief Request NFC-V (ISO 15693) technology
-   * @details Library scans for NFC tags in the vicinity that support the requested technology.
+   * @brief Request NFC technology
+   * @details Start any of your NFC operations sequence by calling this method.
+   * NfcManager scans for NFC tags in the vicinity that support the requested technology.
    * Once an NFC tag of the specified technology is detected, the NFC manager sets up a connection with the tag.
    * This connection allows to send commands to and receive responses from the tag.
    */
-  async requestNfcTechnology() {
-    try {
-      await NfcManager.requestTechnology(NfcTech.Iso15693IOS); // for Android - NfcTech.NfcV
-      console.log('Iso15693IOS technology requested');
-    } catch (ex) {
-      console.warn(ex);
-    }
-  }
-
-  async cancelTechnologyRequest() {
-    return await NfcManager.cancelTechnologyRequest();
-  }
-
-  async readBasicTagInfo() {
-    try {
-      await this.requestNfcTechnology();
-      const tag = await NfcManager.getTag(); // data example: {"icManufacturerCode": 2, "icSerialNumber": [Array], "id": "E0022402DFD5434E", "tech": "iso15693"}
-
-      return tag;
-    } catch (ex) {
-      console.warn(ex);
-    } finally {
-      // Cancel the technology request
-      NfcManager.cancelTechnologyRequest();
-    }
-  }
+  requestTechnology(): Promise<void>;
 
   /**
-   * @note The iOS CoreNFC custom command works only in NON-ADDRESSED mode.
-   * @see https://developer.apple.com/documentation/corenfc/nfciso15693tag#3214383
+   * @brief Present RF password
+   * @details Required for write operations - opens a security session
    */
-  async presentRFPassword() {
-    return await NfcManager.iso15693HandlerIOS.customCommand({
-      flags: Nfc15693RequestFlagIOS.HighDataRate,
-      customCommandCode: CMD.PRESENT_PASSWORD,
-      customRequestParameters: [
-        // PasswordNumber + Password Value.
-        ST25DV_RF_PWD_0_NUMBER,
-        ...DEFAULT_RF_PASSWORD,
-      ],
-    });
-  }
+  presentRFPassword(): Promise<number[]>;
 
-  async readMailboxMode() {
-    return await NfcManager.iso15693HandlerIOS.customCommand({
-      flags: Nfc15693RequestFlagIOS.HighDataRate,
-      customCommandCode: CMD.READ_CONFIGURATION,
-      customRequestParameters: [RF_REGISTER_ADDRESS.MB_MODE],
-    });
-  }
+  /**
+   * @brief Read static configuration register
+   */
+  readConfiguration(registerAddress: number): Promise<number[]>;
 
-  async readMailboxControl() {
-    return await NfcManager.iso15693HandlerIOS.customCommand({
-      flags: Nfc15693RequestFlagIOS.HighDataRate,
-      customCommandCode: CMD.READ_DYN_CONFIGURATION,
-      customRequestParameters: [RF_REGISTER_ADDRESS.MB_CTRL_Dyn],
-    });
-  }
+  /**
+   * @brief Write static configuration register
+   * @returns empty array on success
+   */
+  writeConfiguration(
+    registerAddress: number,
+    registerValue: number,
+  ): Promise<number[]>;
 
-  // TODO for Mailbox operations check MB_CTRL_Dyn MB enabled (MB_EN) and set MB_MODE to 0x01
+  /**
+   * @brief Read dynamic configuration register
+   */
+  readDynamicConfiguration(registerAddress: number): Promise<number[]>;
 
-  async enableMailbox() {
-    return await NfcManager.iso15693HandlerIOS.customCommand({
-      flags: Nfc15693RequestFlagIOS.HighDataRate,
-      customCommandCode: CMD.WRITE_CONFIGURATION,
-      customRequestParameters: [
-        RF_REGISTER_ADDRESS.MB_MODE,
-        MB_MODE_VAL.ENABLE_FTM << MB_MODE_SHIFT.MB_MODE, // Enable mailbox
-      ],
-    });
-  }
+  /**
+   * @brief Write dynamic configuration register
+   * @returns empty array on success
+   */
+  writeDynamicConfiguration(
+    registerAddress: number,
+    registerValue: number,
+  ): Promise<number[]>;
 
-  async initMailbox() {
-    console.log(
-      'Write to MB_CTRL_Dyn: ',
-      MB_CTRL_Dyn_VAL.ENABLE_FTM << MB_CTRL_Dyn_SHIFT.MB_EN,
-    );
-    return await NfcManager.iso15693HandlerIOS.customCommand({
-      flags: Nfc15693RequestFlagIOS.HighDataRate,
-      customCommandCode: CMD.WRITE_DYN_CONFIGURATION,
-      customRequestParameters: [
-        RF_REGISTER_ADDRESS.MB_CTRL_Dyn,
-        MB_CTRL_Dyn_VAL.ENABLE_FTM << MB_CTRL_Dyn_SHIFT.MB_EN, // Enable mailbox
-      ],
-    });
-  }
+  /**
+   * @brief Read up to 256 byte of the mailbox, at double data rate.
+   */
+  fastReadMailboxMessage(): Promise<number[]>;
 
-  async writeMailboxMessage(message: number[]) {
-    const messageLength = message.length;
-    if (messageLength > 256) {
-      throw new Error('Message length is greater than 256 bytes');
-    }
+  /**
+   * @brief Write up to 256 byte of the mailbox, at double data rate.
+   * @param message - up to 256 byte message to write
+   * @returns empty array on success
+   */
+  fastWriteMailboxMessage(message: number[]): Promise<number[]>;
 
-    return await NfcManager.iso15693HandlerIOS.customCommand({
-      flags: Nfc15693RequestFlagIOS.HighDataRate,
-      customCommandCode: CMD.WRITE_MAILBOX_MESSAGE,
-      customRequestParameters: [messageLength - 1, ...message],
-    });
-  }
+  /**
+   * @brief Read the length of the mailbox message, at double data rate.
+   * @returns Length of the mailbox message - 1 byte e.g. 0xFF (255) means 256 bytes length
+   */
+  fastReadMailboxMessageLength(): Promise<number>;
 
-  async readGPOControl() {
-    return await NfcManager.iso15693HandlerIOS.customCommand({
-      flags: Nfc15693RequestFlagIOS.HighDataRate,
-      customCommandCode: CMD.READ_CONFIGURATION,
-      customRequestParameters: [RF_REGISTER_ADDRESS.GPO_CTRL],
-    });
-  }
+  /**
+   * @brief Initialize NFC Manager
+   */
+  init(): Promise<void>;
 
-  async configureGPOControl() {
-    return await NfcManager.iso15693HandlerIOS.customCommand({
-      flags: Nfc15693RequestFlagIOS.HighDataRate,
-      customCommandCode: CMD.WRITE_CONFIGURATION,
-      customRequestParameters: [
-        RF_REGISTER_ADDRESS.GPO_CTRL,
-        (GPO_CTRL_Dyn_VAL.ENABLED_GPO_OUTPUT << GPO_CTRL_Dyn_SHIFT.GPO_EN) |
-          (GPO_CTRL_Dyn_VAL.PULSE_ON_WM_EOM <<
-            GPO_CTRL_Dyn_SHIFT.RF_GET_MSG_EN) |
-          (GPO_CTRL_Dyn_VAL.PULSE_ON_WM_COMPLETE <<
-            GPO_CTRL_Dyn_SHIFT.RF_PUT_MSG_EN),
-      ],
-    });
-  }
+  /**
+   * @brief Cancel the NFC technology request
+   * @details End any of your NFC operations sequence by calling this method.
+   */
+  cancelTechnologyRequest(): Promise<void>;
+
+  /**
+   * @brief Get System information (basic tag information)
+   */
+  readBasicTagInfo(): Promise<TagEvent | null | undefined>;
+
+  /**
+   * @brief initialize Mailbox for Fast Transfer Mode
+   * @details Enable Mailbox MB_MODE and initialize Mailbox MB_CTRL_Dyn
+   * @note RF security session must be opened before (presentRFPassword)
+   */
+  initMailbox(): Promise<void>;
+
+  /**
+   * @brief Configure GPO Control Dynamic register
+   */
+  configureGPOControl(gpoControl: number): Promise<void>;
 }

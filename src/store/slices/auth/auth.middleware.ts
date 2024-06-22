@@ -1,4 +1,4 @@
-import { ThunkMiddleware } from '@reduxjs/toolkit';
+import { ThunkMiddleware, AnyAction } from '@reduxjs/toolkit';
 
 import { signIn, signOut, signUp } from './auth.slice';
 import { RootState } from '../../store';
@@ -12,7 +12,7 @@ export const authMiddleware: ThunkMiddleware<RootState> =
     }
 
     if (action.type === signOut.fulfilled.type) {
-      setUser(null);
+      store.dispatch(setUser(null));
     }
     return next(action);
   };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -26,6 +26,7 @@ import {
 } from '../store/selectors/auth.selectors';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { AppTheme, useAppTheme } from '../AppTheme';
+import nfcService from '../services/nfc/nfc.service';
 
 type SignInScreenProps = {
   navigation: StackNavigationProp<
@@ -42,6 +43,12 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ navigation }) => {
   const error = useAppSelector(authErrorSelector, shallowEqual);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+
+
+  // TODO remove it
+  useEffect( () => {
+    nfcService.init();
+  }, []);
 
   const handleSubmitSignIn = () => {
     Keyboard.dismiss();

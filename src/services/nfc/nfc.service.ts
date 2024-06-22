@@ -1,20 +1,24 @@
 import { NfcError } from 'react-native-nfc-manager';
 
-import ST25DV from '../../drivers/ST25DV/st25dv';
 import { register8bToInfoString } from '../../drivers/ST25DV/st25dv.utils';
 import {
   GPO_CTRL_Dyn_SHIFT,
   GPO_CTRL_Dyn_VAL,
   MB_CTRL_Dyn_SHIFT,
   MB_CTRL_Dyn_VAL,
-  MB_MODE_SHIFT,
-  MB_MODE_VAL,
+  RF_REGISTER_ADDRESS,
 } from '../../drivers/ST25DV/st25dv.constants';
+import { ST25DVFactory } from '../../drivers/ST25DV/st25dv.factory';
+import { ST25DV } from '../../drivers/ST25DV/st25dv';
 
 class NfcService {
-  private nfcDriver: InstanceType<typeof ST25DV>;
-  constructor(NFCDriver: typeof ST25DV) {
-    this.nfcDriver = new NFCDriver();
+  private nfcDriver: ST25DV;
+  constructor(nfcDriver: ST25DV) {
+    this.nfcDriver = nfcDriver;
+  }
+
+  async init() {
+    this.nfcDriver.init();
   }
 
   async readDeviceChipsInfo() {
@@ -23,60 +27,45 @@ class NfcService {
     return { tag };
   }
 
-  // async writeMessageToMailbox(message: Uint8Array[]) {
-  //   try {
-  //     await this.nfcDriver.requestNfcTechnology();
-  //     await this.nfcDriver.presentRFPassword();
-  //     await this.nfcDriver.configureGPOControl();
-  //     await this.nfcDriver.enableMailbox();
-  //   } catch (ex: unknown) {
-  //     console.error((ex as NfcError.NfcErrorBase).constructor.name);
-  //     throw ex;
-  //   } finally {
-  //     await this.nfcDriver.cancelTechnologyRequest();
-  //   }
-  // }
-
   async testCmd() {
     try {
-      await this.nfcDriver.requestNfcTechnology();
+      await this.nfcDriver.requestTechnology();
       let resp = await this.nfcDriver.presentRFPassword();
       console.log('presentRFPassword(): ', resp);
 
       // configure GPO
-      resp = await this.nfcDriver.configureGPOControl();
-      console.log('configureGPOControl()', resp);
+      await this.nfcDriver.configureGPOControl(
+        (GPO_CTRL_Dyn_VAL.ENABLED_GPO_OUTPUT << GPO_CTRL_Dyn_SHIFT.GPO_EN) |
+          (GPO_CTRL_Dyn_VAL.PULSE_ON_WM_EOM <<
+            GPO_CTRL_Dyn_SHIFT.RF_GET_MSG_EN) |
+          (GPO_CTRL_Dyn_VAL.PULSE_ON_WM_COMPLETE <<
+            GPO_CTRL_Dyn_SHIFT.RF_PUT_MSG_EN),
+      );
 
-      resp = await this.nfcDriver.readGPOControl();
-      console.log('readGPOControl()', resp);
+      const [gpoControl] = await this.nfcDriver.readDynamicConfiguration(
+        RF_REGISTER_ADDRESS.GPO_CTRL_Dyn,
+      );
+      console.log('readGPOControl()', gpoControl);
       console.log(
         register8bToInfoString(
-          resp[0],
-          'GPO_CTRL',
+          gpoControl,
+          'GPO_CTRL_Dyn',
           GPO_CTRL_Dyn_SHIFT,
           GPO_CTRL_Dyn_VAL,
         ),
       );
 
-      // enable FTM
-      resp = await this.nfcDriver.enableMailbox();
-      console.log('enableMailbox()', resp);
-
-      resp = await this.nfcDriver.readMailboxMode();
-      console.log('readMailboxMode()', resp);
-      console.log(
-        register8bToInfoString(resp[0], 'MB_MODE', MB_MODE_SHIFT, MB_MODE_VAL),
-      );
-
       // init FTM
-      resp = await this.nfcDriver.initMailbox();
-      console.log('initMailbox()', resp);
+      await this.nfcDriver.initMailbox();
+      console.log('enableMailbox()');
 
-      resp = await this.nfcDriver.readMailboxControl();
-      console.log('readMailboxControl()', resp);
+      const [mbCtrlDyn] = await this.nfcDriver.readDynamicConfiguration(
+        RF_REGISTER_ADDRESS.MB_CTRL_Dyn,
+      );
+      console.log('readMailboxControl()', mbCtrlDyn);
       console.log(
         register8bToInfoString(
-          resp[0],
+          mbCtrlDyn,
           'MB_CTRL_Dyn',
           MB_CTRL_Dyn_SHIFT,
           MB_CTRL_Dyn_VAL,
@@ -84,13 +73,12 @@ class NfcService {
       );
 
       // test MB message
-      resp = await this.nfcDriver.writeMailboxMessage([
+      resp = await this.nfcDriver.fastWriteMailboxMessage([
         0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
       ]);
-      console.log('writeMailboxMessage()', resp);
+      console.log('fastWriteMailboxMessage()', resp);
     } catch (ex) {
       // TODO handle TagConnectionLost
-      // console.warn(JSON.stringify(ex, Object.getOwnPropertyNames(ex)));
       console.warn((ex as NfcError.NfcErrorBase).constructor.name);
     } finally {
       await this.nfcDriver.cancelTechnologyRequest();
@@ -98,4 +86,10 @@ class NfcService {
   }
 }
 
-export default new NfcService(ST25DV);
+const nfcDriver = ST25DVFactory.createPlatformDriver(
+  console.log,
+  console.error,
+);
+const nfcServiceInstance = new NfcService(nfcDriver);
+
+export default nfcServiceInstance;
