@@ -30,3 +30,4 @@ Test account:
 - email: test@test.test
 - password: testtest
 
+TODO: add protocol description here from firmware

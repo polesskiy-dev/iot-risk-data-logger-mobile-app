@@ -10,6 +10,7 @@ import {
 } from '../../drivers/ST25DV/st25dv.constants';
 import { ST25DVFactory } from '../../drivers/ST25DV/st25dv.factory';
 import { ST25DV } from '../../drivers/ST25DV/st25dv';
+import { nfcCommands } from './nfcCommands';
 
 class NfcService {
   private nfcDriver: ST25DV;
@@ -27,6 +28,14 @@ class NfcService {
     return { tag };
   }
 
+  async readDeviceSettings() {
+    // TODO use FTM protocol utils
+
+    const deviceSettings = 'mocked'; //await this.nfcDriver.readBasicTagInfo();
+
+    return { deviceSettings };
+  }
+
   async testCmd() {
     try {
       await this.nfcDriver.requestTechnology();
@@ -40,6 +49,8 @@ class NfcService {
             GPO_CTRL_Dyn_SHIFT.RF_GET_MSG_EN) |
           (GPO_CTRL_Dyn_VAL.PULSE_ON_WM_COMPLETE <<
             GPO_CTRL_Dyn_SHIFT.RF_PUT_MSG_EN),
+        // | (GPO_CTRL_Dyn_VAL.PULSE_ON_RF_FIELD <<
+        // GPO_CTRL_Dyn_SHIFT.FIELD_CHANGE_EN),
       );
 
       const [gpoControl] = await this.nfcDriver.readDynamicConfiguration(
@@ -72,10 +83,10 @@ class NfcService {
         ),
       );
 
+      const CMD_TEST_ASCII = 'CMD_TEST'.split('').map((c) => c.charCodeAt(0));
+
       // test MB message
-      resp = await this.nfcDriver.fastWriteMailboxMessage([
-        0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
-      ]);
+      resp = await this.nfcDriver.fastWriteMailboxMessage(CMD_TEST_ASCII);
       console.log('fastWriteMailboxMessage()', resp);
     } catch (ex) {
       // TODO handle TagConnectionLost

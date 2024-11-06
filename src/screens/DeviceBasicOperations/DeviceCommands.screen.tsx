@@ -68,7 +68,7 @@ const DeviceCommandsScreen: React.FC<Props> = ({ navigation }) => {
           <DeviceCommandCard
             title="Apply Logging Settings"
             iconName="content-save-cog"
-            onPress={() => handleCommand('pullLog')}
+            onPress={() => handleCommand('apply')}
             description="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
           />
           ,
