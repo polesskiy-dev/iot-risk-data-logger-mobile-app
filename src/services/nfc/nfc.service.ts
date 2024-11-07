@@ -10,7 +10,6 @@ import {
 } from '../../drivers/ST25DV/st25dv.constants';
 import { ST25DVFactory } from '../../drivers/ST25DV/st25dv.factory';
 import { ST25DV } from '../../drivers/ST25DV/st25dv';
-import { nfcCommands } from './nfcCommands';
 
 class NfcService {
   private nfcDriver: ST25DV;
