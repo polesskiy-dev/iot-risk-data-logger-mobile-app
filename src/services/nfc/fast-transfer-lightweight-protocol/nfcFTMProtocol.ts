@@ -18,8 +18,15 @@ import {
   RF_REGISTER_ADDRESS,
 } from '../../../drivers/ST25DV/st25dv.constants';
 import { register8bToInfoString } from '../../../drivers/ST25DV/st25dv.utils';
-
-const MAILBOX_RF_POLLING_INTERVAL_MS = 1; // milliseconds
+import {
+  messageIsFromHost,
+  messageIsMissedByHost,
+  messageIsMissedByRF,
+  messageIsNotFromRF,
+  messageIsReadByHostSuccessfully,
+  messagePutByHost,
+  pollControlRegisterTillResult,
+} from './nfcControlRegisterPolling';
 
 export const configureRFTransmission = async (nfcDriver: ST25DV) => {
   await nfcDriver.requestTechnology();
@@ -75,54 +82,69 @@ export const configureRFTransmission = async (nfcDriver: ST25DV) => {
 };
 
 /**
- * 1. RF Put message
- * 2. Host (ST25DV) detect event
- * 3. Host (ST25DV) get message
- * 4. RF poll for message being read by host
- * 5. Host (ST25DV) sends response (ACK/NACK)
+ * @brief send general command with payload to device
+ *
+ * 1. RF Puts message
+ * 2. Host (ST25DV) detects event
+ * 3. Host (ST25DV) gets message
+ * 4. RF polls for message being read by host (checking MB_CTRL_Dyn)
  */
 export const sendCommand = async (nfcDriver: ST25DV, cmd: FTMCommand) => {
-  const resp = await nfcDriver.fastWriteMailboxMessage(cmd.serialize());
-  console.log('fastWriteMailboxMessage(): ', resp); // TODO check that resp is 0x00?
+  try {
+    console.log('sending a command: ', cmd.command.toString());
+    // transfer command via RF to device
+    const resp = await nfcDriver.fastWriteMailboxMessage(cmd.serialize());
+    console.log('fastWriteMailboxMessage(): ', resp); // TODO check that resp is 0x00
+  } catch (ex) {
+    throw new Error('fastWriteMailboxMessage failed');
+  }
 
-  const MESSAGE_IS_FROM_RF =
-    MB_CTRL_Dyn_VAL.MESSAGE_IN_MB_IS_FROM_RF <<
-    MB_CTRL_Dyn_SHIFT.RF_CURRENT_MSG;
-  const MESSAGE_IS_NOT_READ_BY_HOST =
-    MB_CTRL_Dyn_VAL.RF_MESSAGE_IN_MAILBOX << MB_CTRL_Dyn_SHIFT.RF_PUT_MSG;
-  const MESSAGE_MISSED_BY_HOST =
-    MB_CTRL_Dyn_VAL.I2C_MISSED_MESSAGE << MB_CTRL_Dyn_SHIFT.HOST_MISS_MSG;
-
-  // TODO implement polling correctly by wrapping with Promise
-  // polling until host will read RF message or
-  const pollingID = setInterval(async () => {
-    const [mbCtrlDyn] = await nfcDriver.readDynamicConfiguration(
-      RF_REGISTER_ADDRESS.MB_CTRL_Dyn,
+  try {
+    const mbCtrlDyn = await pollControlRegisterTillResult(
+      nfcDriver,
+      [messageIsReadByHostSuccessfully],
+      [messageIsNotFromRF, messageIsMissedByHost],
     );
+    console.log(
+      'pollControlRegisterTillResult: ',
+      Number(mbCtrlDyn).toString(16),
+    );
+  } catch (ex) {
+    throw ex;
+  }
+};
 
-    // console.log('readMailboxControl()', mbCtrlDyn);
-    // console.log(
-    //   register8bToInfoString(
-    //     mbCtrlDyn,
-    //     'MB_CTRL_Dyn',
-    //     MB_CTRL_Dyn_SHIFT,
-    //     MB_CTRL_Dyn_VAL,
-    //   ),
-    // );
+/**
+ * @brief Read the data from device
+ *
+ * @note implied that command was sent before
+ *
+ * 1. Host Puts message
+ * 2. RF polls for message (checking MB_CTRL_Dyn)
+ * 4. RF reads the message length
+ * 3. RF reads the actual message
+ */
+export const readResponse = async (nfcDriver: ST25DV) => {
+  try {
+    const mbCtrlDyn = await pollControlRegisterTillResult(
+      nfcDriver,
+      [messageIsFromHost, messagePutByHost],
+      [messageIsMissedByRF],
+    );
+    console.log(
+      'pollControlRegisterTillResult: ',
+      Number(mbCtrlDyn).toString(16),
+    );
+  } catch (ex) {
+    throw ex;
+  }
 
-    if (!(mbCtrlDyn & MESSAGE_IS_FROM_RF)) {
-      clearInterval(pollingID);
-      throw new Error('command is not transferred to host');
-    }
+  try {
+    const mbLenDyn = await nfcDriver.fastReadMailboxMessageLength(); // (returns size - 1) byte
+    const mailboxData = await nfcDriver.fastReadMailboxMessage();
 
-    if (mbCtrlDyn & MESSAGE_MISSED_BY_HOST) {
-      clearInterval(pollingID);
-      throw new Error('command is missed by host');
-    }
-
-    // command successfully read by host (i2c)
-    if (!(mbCtrlDyn & MESSAGE_IS_NOT_READ_BY_HOST)) {
-      clearInterval(pollingID);
-    }
-  }, MAILBOX_RF_POLLING_INTERVAL_MS);
+    return mailboxData;
+  } catch (ex) {
+    throw new Error('Mailbox message read failed');
+  }
 };

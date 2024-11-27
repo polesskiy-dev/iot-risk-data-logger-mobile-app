@@ -43,6 +43,7 @@ export enum RF_REGISTER_ADDRESS {
   GPO_CTRL_Dyn = 0x00, // GPO control
   MB_MODE = 0x0d, // Mailbox, Fast transfer mode control and status
   MB_CTRL_Dyn = 0x0d, // Mailbox, Fast transfer mode control and status
+  MB_LEN_Dyn = 0x07, // Mailbox data length, Size in byte, minus 1 byte
 }
 
 export enum MB_MODE_SHIFT {

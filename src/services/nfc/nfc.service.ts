@@ -10,6 +10,15 @@ import {
 } from '../../drivers/ST25DV/st25dv.constants';
 import { ST25DVFactory } from '../../drivers/ST25DV/st25dv.factory';
 import { ST25DV } from '../../drivers/ST25DV/st25dv';
+import {
+  configureRFTransmission,
+  readResponse,
+  sendCommand,
+} from './fast-transfer-lightweight-protocol/nfcFTMProtocol';
+import {
+  FTMCommand,
+  PROTOCOL_CMD,
+} from './fast-transfer-lightweight-protocol/FTMCommand';
 
 class NfcService {
   private nfcDriver: ST25DV;
@@ -21,6 +30,11 @@ class NfcService {
     this.nfcDriver.init();
   }
 
+  // TODO make it globally and once, just check that transmission is configured here
+  async configureTransmission() {
+    await configureRFTransmission(this.nfcDriver);
+  }
+
   async readDeviceChipsInfo() {
     const tag = await this.nfcDriver.readBasicTagInfo();
 
@@ -28,7 +42,19 @@ class NfcService {
   }
 
   async readDeviceSettings() {
-    // TODO use FTM protocol utils
+    await this.configureTransmission(); // checks if the transmission configured and configure it if not
+
+    const readSettingsCMD = new FTMCommand(
+      PROTOCOL_CMD.GLOBAL_CMD_READ_SETTINGS,
+      [],
+    );
+
+    await sendCommand(this.nfcDriver, readSettingsCMD);
+    // TODO read response
+
+    const mailboxData = await readResponse(this.nfcDriver);
+
+    console.log(mailboxData);
 
     const deviceSettings = 'mocked'; //await this.nfcDriver.readBasicTagInfo();
 
@@ -82,7 +108,7 @@ class NfcService {
         ),
       );
 
-      const CMD_TEST_ASCII = 'CMD_TEST'.split('').map((c) => c.charCodeAt(0));
+      const CMD_TEST_ASCII = 'CMD_TEST'.split('').map(c => c.charCodeAt(0));
 
       // test MB message
       resp = await this.nfcDriver.fastWriteMailboxMessage(CMD_TEST_ASCII);

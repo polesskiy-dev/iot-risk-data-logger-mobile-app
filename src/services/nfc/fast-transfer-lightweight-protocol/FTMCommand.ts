@@ -1,4 +1,4 @@
-import { calculateCrc8Nrsc5 } from './crc8';
+import { calculateCrc8NRSC5 } from './crc8';
 
 const NFC_MAILBOX_PROTOCOL_CRC8_SIZE = 1;
 const NFC_MAILBOX_PROTOCOL_CMD_SIZE = 1;
@@ -33,7 +33,7 @@ export class FTMCommand {
   private readonly payloadSize: number;
 
   constructor(
-    private readonly command: PROTOCOL_CMD,
+    readonly command: PROTOCOL_CMD,
     private readonly payload: number[],
   ) {
     this.command = command;
@@ -45,7 +45,7 @@ export class FTMCommand {
     this.payloadSize = payload.length;
 
     // calc crc8/nrsc5
-    this.crc8 = calculateCrc8Nrsc5([
+    this.crc8 = calculateCrc8NRSC5([
       this.command,
       this.payloadSize,
       ...this.payload,
