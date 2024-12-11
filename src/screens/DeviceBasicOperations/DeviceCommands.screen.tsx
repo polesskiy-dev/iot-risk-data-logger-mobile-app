@@ -13,6 +13,7 @@ import {
 import { useAppDispatch } from '../../hooks';
 import { nfcReadDeviceInfo } from '../../store/slices/deviceInfo/deviceInfo.thunks';
 import nfcService from '../../services/nfc/nfc.service';
+import { nfcReadDeviceSettings } from '../../store/slices/deviceSettings/deviceSettings.thunks';
 
 type Props = {
   navigation: StackNavigationProp<
@@ -70,6 +71,13 @@ const DeviceCommandsScreen: React.FC<Props> = ({ navigation }) => {
             iconName="content-save-cog"
             onPress={() => handleCommand('apply')}
             description="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+          />
+          ,
+          <DeviceCommandCard
+            title="Read Logging Settings"
+            iconName="cog-transfer"
+            onPress={() => dispatch(nfcReadDeviceSettings(navigation))}
+            description="Read Logging Settings"
           />
           ,
           <DeviceCommandCard
