@@ -42,23 +42,28 @@ class NfcService {
   }
 
   async readDeviceSettings() {
-    await this.configureTransmission(); // checks if the transmission configured and configure it if not
+    try {
+      await this.configureTransmission(); // checks if the transmission configured and configure it if not
 
-    const readSettingsCMD = new FTMCommand(
-      PROTOCOL_CMD.GLOBAL_CMD_READ_SETTINGS,
-      [],
-    );
+      const readSettingsCMD = new FTMCommand(
+        PROTOCOL_CMD.GLOBAL_CMD_READ_SETTINGS,
+        [],
+      );
 
-    await sendCommand(this.nfcDriver, readSettingsCMD);
-    // TODO read response
+      await sendCommand(this.nfcDriver, readSettingsCMD);
 
-    const mailboxData = await readResponse(this.nfcDriver);
+      const mailboxData = await readResponse(this.nfcDriver);
 
-    console.log(mailboxData);
+      console.log(mailboxData);
 
-    const deviceSettings = 'mocked'; //await this.nfcDriver.readBasicTagInfo();
+      const deviceSettings = 'mocked'; //await this.nfcDriver.readBasicTagInfo();
 
-    return { deviceSettings };
+      return { deviceSettings };
+    } catch (ex) {
+      throw ex;
+    } finally {
+      await this.nfcDriver.cancelTechnologyRequest();
+    }
   }
 
   async testCmd() {

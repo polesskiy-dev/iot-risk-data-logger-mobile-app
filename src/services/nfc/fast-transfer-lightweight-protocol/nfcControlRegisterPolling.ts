@@ -3,12 +3,11 @@ import {
   MB_CTRL_Dyn_VAL,
   RF_REGISTER_ADDRESS,
 } from '../../../drivers/ST25DV/st25dv.constants';
-import { register8bToInfoString } from '../../../drivers/ST25DV/st25dv.utils';
 import { ST25DV } from '../../../drivers/ST25DV/st25dv';
 
 type PollPredicate = (controlRegisterValue: number) => boolean;
 
-const MAILBOX_RF_POLLING_INTERVAL_MS = 1; // milliseconds
+const MAILBOX_RF_POLLING_INTERVAL_MS = 50; // milliseconds
 const RF_POLLING_TIMEOUT_MS = 1000; // interval to poll until aborting
 
 const MESSAGE_IS_FROM_RF =
@@ -38,26 +37,33 @@ export const messageIsFromHost = (mbCtrlDyn: number) =>
 export const messagePutByHost = (mbCtrlDyn: number) =>
   Boolean(mbCtrlDyn & MESSAGE_PUT_BY_HOST);
 
-export const pollControlRegisterTillResult = async (
+export const pollMBControlRegister = async (
   nfcDriver: ST25DV,
   pollSuccessPredicates: PollPredicate[],
   pollFailPredicates: PollPredicate[],
 ) => {
+  let pollingIntervalID: NodeJS.Timeout | null = null;
+  let pollingTimeoutID: NodeJS.Timeout | null = null;
+
   // poll (read MB_CTRL_Dyn with intervals) while cmd will be read by host or timeout exceeds
   return new Promise<number>((resolve, reject) => {
-    const pollingIntervalID = setInterval(() => {
+    pollingIntervalID = setInterval(() => {
       nfcDriver
         .readDynamicConfiguration(RF_REGISTER_ADDRESS.MB_CTRL_Dyn)
         .then(([mbCtrlDyn]) => {
           // check MB_CTRL_Dyn throughout all success predicates (AND): all should fulfill
-          if (pollSuccessPredicates.every(predicate => predicate(mbCtrlDyn)))
+          if (pollSuccessPredicates.every(predicate => predicate(mbCtrlDyn))) {
             resolve(mbCtrlDyn);
+          }
 
           // check MB_CTRL_Dyn throughout all failure predicates (OR): fail in case of any
-          if (pollFailPredicates.some(predicate => predicate(mbCtrlDyn)))
+          if (pollFailPredicates.some(predicate => predicate(mbCtrlDyn))) {
             reject(
-              `pollControlRegisterTillResult failed with MB_CTRL_Dyn value of ${mbCtrlDyn}`,
+              new Error(
+                `pollControlRegisterTillResult failed with MB_CTRL_Dyn value of ${mbCtrlDyn}`,
+              ),
             );
+          }
         })
         .catch(() => {
           reject(
@@ -66,21 +72,15 @@ export const pollControlRegisterTillResult = async (
               'readDynamicConfiguration(RF_REGISTER_ADDRESS.MB_CTRL_Dyn) failure',
             ),
           );
-        })
-        .finally(() => {
-          clearInterval(pollingIntervalID);
-          clearTimeout(pollingTimeoutID);
         });
     }, MAILBOX_RF_POLLING_INTERVAL_MS);
 
     // abort polling on time limit exceeds
-    const pollingTimeoutID = setTimeout(() => {
-      clearInterval(pollingIntervalID);
-
-      reject(
-        // in case of .readDynamicConfiguration fails itself
-        new Error('MB_CTRL_Dyn polling exceeds timeout'),
-      );
+    pollingTimeoutID = setTimeout(() => {
+      reject(new Error('MB_CTRL_Dyn polling exceeds timeout'));
     }, RF_POLLING_TIMEOUT_MS);
+  }).finally(() => {
+    if (pollingIntervalID) clearInterval(pollingIntervalID);
+    if (pollingTimeoutID) clearTimeout(pollingTimeoutID);
   });
 };

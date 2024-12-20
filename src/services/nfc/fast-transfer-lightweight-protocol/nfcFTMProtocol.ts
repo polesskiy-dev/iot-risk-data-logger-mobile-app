@@ -25,7 +25,7 @@ import {
   messageIsNotFromRF,
   messageIsReadByHostSuccessfully,
   messagePutByHost,
-  pollControlRegisterTillResult,
+  pollMBControlRegister,
 } from './nfcControlRegisterPolling';
 
 export const configureRFTransmission = async (nfcDriver: ST25DV) => {
@@ -100,7 +100,7 @@ export const sendCommand = async (nfcDriver: ST25DV, cmd: FTMCommand) => {
   }
 
   try {
-    const mbCtrlDyn = await pollControlRegisterTillResult(
+    const mbCtrlDyn = await pollMBControlRegister(
       nfcDriver,
       [messageIsReadByHostSuccessfully],
       [messageIsNotFromRF, messageIsMissedByHost],
@@ -126,25 +126,22 @@ export const sendCommand = async (nfcDriver: ST25DV, cmd: FTMCommand) => {
  */
 export const readResponse = async (nfcDriver: ST25DV) => {
   try {
-    const mbCtrlDyn = await pollControlRegisterTillResult(
+    const mbCtrlDyn = await pollMBControlRegister(
       nfcDriver,
       [messageIsFromHost, messagePutByHost],
       [messageIsMissedByRF],
     );
+
     console.log(
       'pollControlRegisterTillResult: ',
       Number(mbCtrlDyn).toString(16),
     );
-  } catch (ex) {
-    throw ex;
-  }
 
-  try {
     const mbLenDyn = await nfcDriver.fastReadMailboxMessageLength(); // (returns size - 1) byte
     const mailboxData = await nfcDriver.fastReadMailboxMessage();
 
     return mailboxData;
   } catch (ex) {
-    throw new Error('Mailbox message read failed');
+    throw ex;
   }
 };
