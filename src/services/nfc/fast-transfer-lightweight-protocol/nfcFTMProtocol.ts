@@ -137,7 +137,7 @@ export const readResponse = async (nfcDriver: ST25DV) => {
       Number(mbCtrlDyn).toString(16),
     );
 
-    const mbLenDyn = await nfcDriver.fastReadMailboxMessageLength(); // (returns size - 1) byte
+    // const mbLenDyn = await nfcDriver.fastReadMailboxMessageLength(); // (returns size - 1) byte
     const mailboxData = await nfcDriver.fastReadMailboxMessage();
 
     return mailboxData;

@@ -8,12 +8,28 @@ import AccountScreen from '../screens/Account.screen';
 import DeviceSettingsScreen from '../screens/DeviceSettings.screen';
 import HistoryScreen from '../screens/History.screen';
 import DeviceBasicOperationsNavigator from './DeviceBasicOperationsNavigator';
+import { appTheme } from '@/src/AppTheme';
 
 const Drawer = createDrawerNavigator();
 
 const DrawerNavigator: React.FC = () => {
+  const { colors } = appTheme
+
   return (
-    <Drawer.Navigator drawerContent={props => <DrawerMenuContent {...props} />}>
+    <Drawer.Navigator /*drawerContent={props => <DrawerMenuContent {...props}*/
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: colors.surface, // Header background
+        },
+        headerTintColor: colors.onSurface, // Header text/icons
+        drawerStyle: {
+          backgroundColor: colors.surface, // Drawer background
+        },
+        drawerActiveTintColor: colors.primary, // Active item color
+        drawerInactiveTintColor: colors.onSurfaceVariant, // Inactive item color
+      }}
+      drawerContent={(props) => <DrawerMenuContent {...props} />}
+    >
       <Drawer.Screen
         name={ScreensNames.DEVICE_BASIC_OPERATIONS_NAVIGATOR}
         component={DeviceBasicOperationsNavigator}
