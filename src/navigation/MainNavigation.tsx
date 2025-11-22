@@ -7,7 +7,9 @@ import { isAuthenticatedSelector } from '../store/selectors/auth.selectors';
 
 const MainNavigation = () => {
   const isAuthenticated = useSelector(isAuthenticatedSelector);
-  return isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />;
+
+  // return isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />;
+  return <DrawerNavigator />;
 };
 
 export default MainNavigation;
